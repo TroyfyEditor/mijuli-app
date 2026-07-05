@@ -316,8 +316,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
     <div class="topbar-title" style="text-align:center">New recording</div>
-    <div class="ticon-gap"></div>
+    <button class="ticon" onclick="triggerUpload()" title="Upload audio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+    </button>
   </div>
+  <input type="file" id="upload-file-in" accept="audio/*" style="display:none" onchange="handleUpload(event)"/>
   <div class="rec-page">
     <div class="waveform" id="waveform">
       <div class="wbar" id="b1"></div><div class="wbar" id="b2"></div><div class="wbar" id="b3"></div>
@@ -336,6 +339,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
     </div>
     <div class="rec-timer" id="rtimer">00:00</div>
     <div class="rec-hint" id="rhint">Tap to start recording</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:-12px">or use ↑ to upload a file</div>
     <div class="rec-ctrls" id="rctrls" style="display:none">
       <button class="cbtn" id="btn-pause" onclick="pauseRec()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -348,6 +352,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   <div class="rec-foot" id="rec-foot" style="display:none">
     <button class="btn-cancel" onclick="cancelRecord()">Cancel</button>
     <button class="btn-save" onclick="saveRecord()">Save & Transcribe</button>
+  </div>
+  <div class="rec-foot" id="upload-foot" style="display:none">
+    <button class="btn-cancel" onclick="cancelUpload()">Cancel</button>
+    <button class="btn-save" onclick="confirmUpload()">Save & Transcribe</button>
   </div>
 </div>
 
@@ -724,12 +732,14 @@ function renderSearchList(recs,q,containerId){
 
 // ── RECORD ──
 function goRecord(){
-  rstate='idle';rms=0;chunks=[];
+  rstate='idle';rms=0;chunks=[];_uploadBlob=null;
   document.getElementById('rec-ring').className='rec-ring';
+  document.getElementById('rec-ring').style.opacity='1';
   document.getElementById('rtimer').textContent='00:00';
   document.getElementById('rhint').textContent='Tap to start recording';
   document.getElementById('rctrls').style.display='none';
   document.getElementById('rec-foot').style.display='none';
+  document.getElementById('upload-foot').style.display='none';
   document.getElementById('waveform').className='waveform';
   document.getElementById('btn-pause').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
   document.getElementById('btn-pause').onclick=pauseRec;
@@ -782,6 +792,40 @@ function stopRec(){
   document.getElementById('rctrls').style.display='none';
   document.getElementById('rec-foot').style.display='flex';
   document.getElementById('rhint').textContent='Done — save or cancel';
+}
+let _uploadBlob=null;
+function triggerUpload(){
+  document.getElementById('upload-file-in').click();
+}
+function handleUpload(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  _uploadBlob=file;
+  // Show upload state
+  document.getElementById('rec-ring').style.opacity='0.3';
+  document.getElementById('rtimer').textContent=file.name.length>24?file.name.slice(0,24)+'…':file.name;
+  document.getElementById('rhint').textContent='File ready to transcribe';
+  document.getElementById('upload-foot').style.display='flex';
+  document.getElementById('rec-foot').style.display='none';
+  document.getElementById('rctrls').style.display='none';
+  e.target.value='';
+}
+function cancelUpload(){
+  _uploadBlob=null;
+  document.getElementById('rec-ring').style.opacity='1';
+  document.getElementById('rtimer').textContent='00:00';
+  document.getElementById('rhint').textContent='Tap to start recording';
+  document.getElementById('upload-foot').style.display='none';
+}
+async function confirmUpload(){
+  if(!_uploadBlob){toast('No file selected.');return;}
+  const blob=_uploadBlob;
+  _uploadBlob=null;
+  show('p-transcribing');
+  const estSec=Math.max(5,Math.round(30*0.15));
+  const estEl=document.getElementById('tr-estimate');
+  if(estEl)estEl.textContent='Your text will appear in about '+estSec+' seconds';
+  await autoTranscribe(blob,0);
 }
 function cancelRecord(){
   clearInterval(tick);stopWave();
@@ -1335,6 +1379,7 @@ async function addBookmark(){
   const rec=await getRec();if(!rec)return;
   const comments=[...(rec.comments||[]),{text:`📌 Bookmark at ${ts}`,author:nick,createdAt:new Date().toISOString()}];
   await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({comments});
+  renderComments(comments);
   toast(`Bookmark added at ${ts} ✓`);
 }
 
@@ -1446,7 +1491,10 @@ function loadAudioBlob(blob){
   setTimeout(()=>{if(tag)tag.style.color='rgba(166,166,158,0.7)';},200);
   // Don't auto-hide - hideSplash() called after auth resolves
 })();
+let _splashReady=false,_authReady=false;
+setTimeout(()=>{_splashReady=true;if(_authReady)hideSplash();},1200);
 function hideSplash(){
+  if(!_splashReady){_authReady=true;return;}
   const splash=document.getElementById('splash');
   if(!splash||splash.style.display==='none')return;
   splash.style.opacity='0';
