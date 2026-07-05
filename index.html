@@ -915,13 +915,28 @@ async function autoTranscribe(blob,dur,customTitle){
     await db.collection('users').doc(user.uid).collection('recordings').doc(id).set(rec);
     recId=id;lang='lt';
     loadAudioBlob(blob);
-    // Auto-generate LT summary only (EN translation done on demand when user taps English)
+    // Generate LT summary first, then EN translation + EN summary in background
     const k=getKey();
     if(k){
       try{
+        // Step 1: LT summary (await - user sees this first)
         const ltSd=await generateSummaryData(transcript,'lt');
         const upd={summaryData:ltSd,updatedAt:new Date().toISOString()};
         await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(upd);
+        // Step 2: EN translation + EN summary in background (don't await)
+        (async()=>{
+          try{
+            const enText=await translateToEn(transcript,k);
+            if(enText){
+              const enUpd={transcriptEn:enText,updatedAt:new Date().toISOString()};
+              try{
+                const enSd=await generateSummaryData(enText,'en');
+                enUpd.summaryDataEn=enSd;
+              }catch(e){console.warn('EN summary failed:',e);}
+              await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(enUpd);
+            }
+          }catch(e){console.warn('EN translation failed:',e);}
+        })();
       }catch(e){
         console.warn('LT summary failed:',e);
         toast('Summary generation failed: '+e.message);
