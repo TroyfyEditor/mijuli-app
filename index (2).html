@@ -257,16 +257,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 </head>
 <body>
 <!-- SPLASH -->
-<div id="splash" style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s ease">
+<div id="splash" style="position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999;transition:opacity .5s ease">
   <div style="font-size:38px;font-weight:700;letter-spacing:-.8px;color:#A6A69E;opacity:0;transition:opacity .3s ease" id="splash-logo">miJuli</div>
+  <div id="splash-tagline" style="font-size:13px;color:rgba(166,166,158,0);transition:color .3s ease;letter-spacing:.02em">Listen. Transcribe. Summarize.</div>
 </div>
 <div class="app">
 
 <!-- ── AUTH ── -->
-<div id="p-auth" class="page no-nav active">
+<div id="p-auth" class="page no-nav">
   <div class="auth-wrap">
     <div class="auth-logo" style="color:#A6A69E">miJuli</div>
-    <div class="auth-tag">Speak. Remember. Never forget.</div>
+    <div class="auth-tag">Listen. Transcribe. Summarize.</div>
     <div class="auth-tabs">
       <button class="atab on" id="atab-in" onclick="switchAuth('login')">Sign in</button>
       <button class="atab" id="atab-up" onclick="switchAuth('register')">Register</button>
@@ -407,7 +408,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
       </div>
       <div id="sum-outline" class="sum-empty">No outline yet.</div>
     </div>
-    <button class="sum-gen-btn" id="btn-gen-sum" onclick="doSummarize()">Generate summary</button>
+
     <button class="sum-gen-btn" id="btn-edit-sum" onclick="editSummary()" style="background:var(--surface2);border:1px solid var(--border);color:var(--white);display:none;margin-top:8px">Edit summary</button>
     <button class="btn-del" onclick="deleteRec()">Delete recording</button>
   </div>
@@ -483,10 +484,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
     <div class="acc-sec">
       <div class="acc-lbl">OpenAI API Key</div>
       <input class="acc-input" type="password" id="s-key" placeholder="sk-..."/>
-      <label class="acc-remember">
-        <input type="checkbox" id="s-remember"/>
-        Remember key (stay saved after closing)
-      </label>
+
       <button class="acc-save-btn" onclick="saveKey()">Save key</button>
     </div>
     <div class="acc-sec">
@@ -549,7 +547,12 @@ auth.onAuthStateChanged(async u=>{
     const s=await db.collection('users').doc(u.uid).get();
     nick=s.exists?s.data().nickname:u.email.split('@')[0];
     afterLogin();
-  }else{user=null;show('p-auth');document.getElementById('bottom-nav').style.display='none';}
+  }else{
+    user=null;
+    hideSplash();
+    show('p-auth');
+    document.getElementById('bottom-nav').style.display='none';
+  }
 });
 
 let amode='login';
@@ -587,6 +590,7 @@ function setErr(m){document.getElementById('a-err').textContent=m;}
 async function doSignOut(){await auth.signOut();}
 
 function afterLogin(){
+  hideSplash();
   document.getElementById('bottom-nav').style.display='flex';
   loadHomeList();
   show('p-home');
@@ -600,8 +604,14 @@ function show(id){
   const noNav=['p-auth','p-record','p-transcribing','p-detail'];
   document.getElementById('bottom-nav').style.display=noNav.includes(id)?'none':'flex';
 }
-function goHome(){unloadAudio();loadHomeList();show('p-home');setNavActive('home');}
-function goSearch(){show('p-search');document.getElementById('search-input').focus();setNavActive('');}
+function goHome(){unloadAudio();resetHighlightForNewRec();loadHomeList();show('p-home');setNavActive('home');}
+function goSearch(){
+  document.getElementById('search-input').value='';
+  document.getElementById('search-list').innerHTML='';
+  show('p-search');
+  document.getElementById('search-input').focus();
+  setNavActive('');
+}
 function navTo(tab){
   if(tab==='home'){goHome();}
   else if(tab==='account'){
@@ -609,7 +619,6 @@ function navTo(tab){
     document.getElementById('s-email').textContent=user?.email||'–';
     const k=localStorage.getItem('mj_key')||sessionStorage.getItem('mj_key')||'';
     document.getElementById('s-key').value=k;
-    document.getElementById('s-remember').checked=localStorage.getItem('mj_key_remember')==='1';
     show('p-account');
   }
   setNavActive(tab);
@@ -622,13 +631,10 @@ function setNavActive(tab){
 // ── API KEY ──
 function saveKey(){
   const v=document.getElementById('s-key').value.trim();
-  const rem=document.getElementById('s-remember').checked;
-  if(rem){localStorage.setItem('mj_key',v);sessionStorage.removeItem('mj_key');}
-  else{sessionStorage.setItem('mj_key',v);localStorage.removeItem('mj_key');}
-  localStorage.setItem('mj_key_remember',rem?'1':'0');
+  localStorage.setItem('mj_key',v);
   toast('API key saved ✓');
 }
-function getKey(){return localStorage.getItem('mj_key')||sessionStorage.getItem('mj_key')||'';}
+function getKey(){return localStorage.getItem('mj_key')||'';}
 
 // ── HOME LIST ──
 async function loadHomeList(){
@@ -827,24 +833,23 @@ async function autoTranscribe(blob,dur){
     await db.collection('users').doc(user.uid).collection('recordings').doc(id).set(rec);
     recId=id;lang='lt';
     loadAudioBlob(blob);
-    // Auto-generate LT summary + EN translation in parallel
+    // Auto-generate LT summary only (EN translation done on demand when user taps English)
     const k=getKey();
     if(k){
-      const [sdResult, enResult] = await Promise.allSettled([
-        generateSummaryData(transcript,'lt'),
-        translateToEn(transcript,k)
-      ]);
-      const upd={updatedAt:new Date().toISOString()};
-      if(sdResult.status==='fulfilled')upd.summaryData=sdResult.value;
-      if(enResult.status==='fulfilled')upd.transcriptEn=enResult.value;
-      if(Object.keys(upd).length>1){
+      try{
+        const ltSd=await generateSummaryData(transcript,'lt');
+        const upd={summaryData:ltSd,updatedAt:new Date().toISOString()};
         await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(upd);
+      }catch(e){
+        console.warn('LT summary failed:',e);
+        toast('Summary generation failed: '+e.message);
       }
     }
     await openDetail(id);
   }catch(err){toast('Error: '+err.message);goHome();}
 }
 async function translateToEn(transcript,k){
+  if(!k)throw new Error('No API key');
   const r=await fetch('https://api.openai.com/v1/chat/completions',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},
@@ -854,13 +859,17 @@ async function translateToEn(transcript,k){
     ]})
   });
   const d=await r.json();
-  return d.choices?.[0]?.message?.content?.trim()||'';
+  if(!r.ok)throw new Error(d.error?.message||'Translation error');
+  const txt=d.choices?.[0]?.message?.content?.trim()||'';
+  if(!txt)throw new Error('Empty translation');
+  return txt;
 }
 
 // ── DETAIL ──
 async function openDetail(id){
   recId=id;lang='lt';
   unloadAudio();
+  resetHighlightForNewRec();
   show('p-detail');
   switchDTab('summary');
   // Use cached data from allRecs for instant render
@@ -884,7 +893,14 @@ async function openDetail(id){
   // Load audio immediately from IndexedDB (no wait)
   idbGetBlob(id).then(blob=>{
     if(recId!==id)return;
-    if(blob)loadAudioBlob(blob);
+    if(blob){
+      loadAudioBlob(blob);
+    }else{
+      // Audio not in local storage (old recording or different device)
+      document.getElementById('p-time').textContent='Audio not on this device';
+    }
+  }).catch(()=>{
+    document.getElementById('p-time').textContent='Audio unavailable';
   });
   // Fetch fresh data from Firestore in background
   db.collection('users').doc(user.uid).collection('recordings').doc(id).get().then(s=>{
@@ -907,8 +923,14 @@ function renderDetail(rec){
   if(tr){
     tc.className='tr-text';
     tc.textContent=tr;
-    delete tc.dataset.wrapped; // reset so highlight can re-wrap
-    if(highlightMode)wrapTranscriptWords(tc);
+    delete tc.dataset.wrapped;
+    // Always wrap if there are saved highlights for this recording
+    const saved=highlightedWords[recId];
+    if(saved&&saved.size>0){
+      wrapTranscriptWords(tc);
+    }else if(highlightMode){
+      wrapTranscriptWords(tc);
+    }
   }else{tc.className='tr-empty';tc.textContent='No transcript yet.';}
   document.getElementById('btn-cptr').disabled=!tr;
   document.getElementById('btn-edit-tr').disabled=!tr;
@@ -937,6 +959,9 @@ function renderSummary(rec){
       <button onclick="editActionItem(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0;display:flex;align-items:center">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </button>
+      <button onclick="deleteActionItem(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;flex-shrink:0;display:flex;align-items:center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+      </button>
     </div>`).join('');
   // outline
   const ol=document.getElementById('sum-outline');
@@ -950,7 +975,10 @@ function renderSummary(rec){
   }else{ol.className='sum-empty';ol.innerHTML='No outline yet.';}
   const hasSummary=!!(sd?.overview);
   const generating=!!(rec._generatingSummary);
-  document.getElementById('btn-gen-sum').style.display=(hasSummary||generating)?'none':'block';
+  if(!hasSummary&&!generating){
+    ov.className='sum-empty';
+    ov.textContent='No summary yet.';
+  }
   document.getElementById('btn-edit-sum').style.display=hasSummary?'block':'none';
 }
 function renderComments(comments){
@@ -1120,6 +1148,15 @@ async function addActionItem(){
     renderSummary({...rec,actionItems:items});
   });
 }
+async function deleteActionItem(i){
+  if(!confirm('Delete this action item?'))return;
+  const rec=await getRec();if(!rec)return;
+  const items=[...(rec.actionItems||[])];
+  items.splice(i,1);
+  await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({actionItems:items});
+  renderSummary({...rec,actionItems:items});
+  toast('Deleted.');
+}
 async function editActionItem(i){
   const rec=await getRec();if(!rec)return;
   const current=(rec.actionItems||[])[i]?.text||'';
@@ -1233,35 +1270,46 @@ function seekP(e){if(!ael||!ael.duration)return;const r=e.currentTarget.getBound
 function skipBack(){if(ael)ael.currentTime=Math.max(0,ael.currentTime-5);}
 function skipFwd(){if(ael)ael.currentTime=Math.min(ael.duration||0,ael.currentTime+5);}
 let highlightMode=false;
+const highlightedWords={}; // recId -> Set of word indices
+
 function toggleHighlight(){
   highlightMode=!highlightMode;
   const btn=document.getElementById('btn-highlight-tr');
   if(btn)btn.classList.toggle('on',highlightMode);
-  const el=document.getElementById('d-tr');
   if(highlightMode){
+    const el=document.getElementById('d-tr');
     wrapTranscriptWords(el);
     toast('Tap words to highlight');
   }else{
-    el.querySelectorAll('.tap-word.hl').forEach(s=>s.classList.remove('hl'));
-    toast('Highlight off');
+    toast('Highlights saved');
   }
 }
 function wrapTranscriptWords(el){
   if(el.dataset.wrapped)return;
   const text=el.textContent||'';
   if(!text.trim())return;
-  // Split by whitespace preserving spaces
   const parts=text.split(/(\s+)/);
   el.innerHTML='';
+  const saved=highlightedWords[recId]||new Set();
+  let idx=0;
   parts.forEach(part=>{
     if(part.trim()){
       const span=document.createElement('span');
-      span.className='tap-word';
+      const wordIdx=idx++;
+      span.className='tap-word'+(saved.has(wordIdx)?' hl':'');
+      span.dataset.idx=wordIdx;
       span.textContent=part;
       span.addEventListener('click',function(e){
         e.stopPropagation();
         if(!highlightMode)return;
         this.classList.toggle('hl');
+        // Save highlight state
+        if(!highlightedWords[recId])highlightedWords[recId]=new Set();
+        if(this.classList.contains('hl')){
+          highlightedWords[recId].add(wordIdx);
+        }else{
+          highlightedWords[recId].delete(wordIdx);
+        }
       });
       el.appendChild(span);
     }else{
@@ -1269,6 +1317,12 @@ function wrapTranscriptWords(el){
     }
   });
   el.dataset.wrapped='1';
+}
+function resetHighlightForNewRec(){
+  // Turn off highlight mode when switching recordings
+  highlightMode=false;
+  const btn=document.getElementById('btn-highlight-tr');
+  if(btn)btn.classList.remove('on');
 }
 function toggleWordHighlight(span){
   if(!highlightMode)return;
@@ -1336,18 +1390,16 @@ async function generateSummaryData(transcript,l){
   return JSON.parse(raw);
 }
 async function doSummarize(){
-  const btn=document.getElementById('btn-gen-sum');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Generating…';
+  // kept for manual retry via edit summary flow
+  const rec=await getRec();if(!rec)return;
+  const tr=lang==='lt'?rec.transcript:rec.transcriptEn;
+  if(!tr){toast('Transcribe first.');return;}
   try{
-    const rec=await getRec();if(!rec)return;
-    const tr=lang==='lt'?rec.transcript:rec.transcriptEn;
-    if(!tr){toast('Transcribe first.');return;}
     const sd=await generateSummaryData(tr,lang);
     const upd=lang==='lt'?{summaryData:sd,updatedAt:new Date().toISOString()}:{summaryDataEn:sd,updatedAt:new Date().toISOString()};
     await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update(upd);
     renderSummary({...rec,...upd});toast('Summary ready ✓');
   }catch(e){toast('Error: '+e.message);}
-  finally{btn.disabled=false;btn.textContent='Generate summary';}
 }
 
 
@@ -1388,15 +1440,18 @@ function loadAudioBlob(blob){
 (function(){
   const splash=document.getElementById('splash');
   const logo=document.getElementById('splash-logo');
+  const tag=document.getElementById('splash-tagline');
   if(!splash)return;
-  // Fade in logo
   setTimeout(()=>{logo.style.opacity='1';},50);
-  // Fade out splash
-  setTimeout(()=>{
-    splash.style.opacity='0';
-    setTimeout(()=>{splash.style.display='none';},400);
-  },700);
+  setTimeout(()=>{if(tag)tag.style.color='rgba(166,166,158,0.7)';},200);
+  // Don't auto-hide - hideSplash() called after auth resolves
 })();
+function hideSplash(){
+  const splash=document.getElementById('splash');
+  if(!splash||splash.style.display==='none')return;
+  splash.style.opacity='0';
+  setTimeout(()=>{splash.style.display='none';},500);
+}
 
 function ms2t(ms){const t=Math.floor(ms/1000),h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60;return h>0?h+':'+pad(m)+':'+pad(s):pad(m)+':'+pad(s);}
 function pad(n){return String(n).padStart(2,'0');}
