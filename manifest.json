@@ -1,7 +1,7 @@
 {
   "name": "miJuli",
   "short_name": "miJuli",
-  "description": "Listen. Transcribe. Summarize.",
+  "description": "Klausyk. Transkribuok. Apibendrink.",
   "start_url": "/mijuli-app/",
   "scope": "/mijuli-app/",
   "display": "standalone",

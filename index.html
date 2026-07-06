@@ -265,7 +265,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <!-- SPLASH -->
 <div id="splash" style="position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999;transition:opacity .5s ease">
   <div style="font-size:38px;font-weight:700;letter-spacing:-.8px;color:#A6A69E;opacity:0;transition:opacity .3s ease" id="splash-logo">miJuli</div>
-  <div id="splash-tagline" style="font-size:13px;color:rgba(166,166,158,0);transition:color .3s ease;letter-spacing:.02em">Listen. Transcribe. Summarize.</div>
+  <div id="splash-tagline" style="font-size:13px;color:rgba(166,166,158,0);transition:color .3s ease;letter-spacing:.02em">Klausyk. Transkribuok. Apibendrink.</div>
 </div>
 <div class="app">
 
@@ -273,16 +273,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <div id="p-auth" class="page no-nav">
   <div class="auth-wrap">
     <div class="auth-logo" style="color:#A6A69E">miJuli</div>
-    <div class="auth-tag">Listen. Transcribe. Summarize.</div>
+    <div class="auth-tag">Klausyk. Transkribuok. Apibendrink.</div>
     <div class="auth-tabs">
-      <button class="atab on" id="atab-in" onclick="switchAuth('login')">Sign in</button>
-      <button class="atab" id="atab-up" onclick="switchAuth('register')">Register</button>
+      <button class="atab on" id="atab-in" onclick="switchAuth('login')">Prisijungti</button>
+      <button class="atab" id="atab-up" onclick="switchAuth('register')">Registruotis</button>
     </div>
-    <div class="afield"><label>Nickname</label><input type="text" id="a-nick" placeholder="yourname" autocomplete="username"/></div>
-    <div class="afield" id="a-email-wrap" style="display:none"><label>Email</label><input type="email" id="a-email" placeholder="you@email.com"/></div>
-    <div class="afield"><label>Password</label><input type="password" id="a-pass" placeholder="••••••••"/></div>
+    <div class="afield"><label>Slapyvardis</label><input type="text" id="a-nick" placeholder="tavovardis" autocomplete="username"/></div>
+    <div class="afield" id="a-email-wrap" style="display:none"><label>El. paštas</label><input type="email" id="a-email" placeholder="tu@pastas.lt"/></div>
+    <div class="afield"><label>Slaptažodis</label><input type="password" id="a-pass" placeholder="••••••••"/></div>
     <div class="auth-err" id="a-err"></div>
-    <button class="btn-auth" id="btn-auth-do" onclick="doAuth()">Sign in</button>
+    <button class="btn-auth" id="btn-auth-do" onclick="doAuth()">Prisijungti</button>
   </div>
 </div>
 
@@ -290,7 +290,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <div id="p-home" class="page">
   <div class="topbar">
     <div class="topbar-title" style="color:#A6A69E">miJuli</div>
-    <button class="ticon" onclick="goSearch()" title="Search">
+    <button class="ticon" onclick="goSearch()" title="Paieška">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     </button>
   </div>
@@ -303,13 +303,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
     <button class="ticon" onclick="show('p-home')" style="margin-right:10px">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
-    <div class="topbar-title">Search</div>
+    <div class="topbar-title">Paieška</div>
     <div class="ticon-gap"></div>
   </div>
   <div class="search-wrap">
     <div class="search-box">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="search-input" placeholder="Search recordings or transcript…" oninput="doSearch(this.value)" autofocus/>
+      <input type="text" id="search-input" placeholder="Ieškoti įrašų ar teksto…" oninput="doSearch(this.value)" autofocus/>
     </div>
   </div>
   <div class="home-scroll" id="search-list"></div>
@@ -321,7 +321,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
     <button class="ticon" onclick="cancelRecord()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
-    <div class="topbar-title" style="text-align:center">New recording</div>
+    <div class="topbar-title" style="text-align:center">Naujas įrašas</div>
     <div class="ticon-gap"></div>
   </div>
   <input type="file" id="upload-file-in" accept="audio/*" style="display:none" onchange="handleUpload(event)"/>
@@ -344,17 +344,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
             <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </div>
         </div>
-        <div style="font-size:12px;color:var(--muted)">Record</div>
+        <div style="font-size:12px;color:var(--muted)">Įrašyti</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
         <button onclick="triggerUpload()" style="width:80px;height:80px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#A6A69E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
         </button>
-        <div style="font-size:12px;color:var(--muted)">Upload</div>
+        <div style="font-size:12px;color:var(--muted)">Įkelti</div>
       </div>
     </div>
     <div class="rec-timer" id="rtimer" style="display:none">00:00</div>
-    <div class="rec-hint" id="rhint" style="display:none">Tap to start recording</div>
+    <div class="rec-hint" id="rhint" style="display:none">Palieskite, kad pradėtumėte įrašymą</div>
     <div class="rec-ctrls" id="rctrls" style="display:none">
       <button class="cbtn" id="btn-pause" onclick="pauseRec()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -367,17 +367,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   <div id="rec-title-wrap" style="display:none;padding:0 24px 8px;flex-shrink:0">
     <input id="rec-title-input" type="text" maxlength="80"
       style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--white);outline:none;font-family:inherit"
-      placeholder="Recording title…"
+      placeholder="Įrašo pavadinimas…"
       onfocus="this.style.borderColor='var(--blue)'"
       onblur="this.style.borderColor='var(--border)'"/>
   </div>
   <div class="rec-foot" id="rec-foot" style="display:none">
-    <button class="btn-cancel" onclick="cancelRecord()">Cancel</button>
-    <button class="btn-save" onclick="saveRecord()">Save & Transcribe</button>
+    <button class="btn-cancel" onclick="cancelRecord()">Atšaukti</button>
+    <button class="btn-save" onclick="saveRecord()">Išsaugoti ir transkribuoti</button>
   </div>
   <div class="rec-foot" id="upload-foot" style="display:none">
-    <button class="btn-cancel" onclick="cancelUpload()">Cancel</button>
-    <button class="btn-save" onclick="confirmUpload()">Save & Transcribe</button>
+    <button class="btn-cancel" onclick="cancelUpload()">Atšaukti</button>
+    <button class="btn-save" onclick="confirmUpload()">Išsaugoti ir transkribuoti</button>
   </div>
 </div>
 
@@ -385,8 +385,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <div id="p-transcribing" class="page no-nav">
   <div class="tr-body">
     <img src="https://i.imgur.com/IiGYaxv.gif" style="width:140px;height:140px;object-fit:contain;border-radius:16px" alt="robot"/>
-    <h3>Listening &amp; transcribing…</h3>
-    <p id="tr-estimate" style="font-size:13px;color:var(--muted)">Your text will appear here once ready</p>
+    <h3>Klausoma ir transkribuojama…</h3>
+    <p id="tr-estimate" style="font-size:13px;color:var(--muted)">Tekstas pasirodys, kai bus paruoštas</p>
     <div class="dots"><span></span><span></span><span></span></div>
   </div>
 </div>
@@ -396,75 +396,75 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   <div class="detail-hdr">
     <button class="detail-back" onclick="goHome()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-      Back
+      Atgal
     </button>
-    <div class="detail-title" id="d-title-disp" onclick="editTitle()">Untitled</div>
+    <div class="detail-title" id="d-title-disp" onclick="editTitle()">Be pavadinimo</div>
     <div class="detail-meta">
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span id="d-date">–</span></span>
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="d-dur">–</span></span>
     </div>
   </div>
   <div class="dtabs">
-    <button class="dtab on" id="dtab-sum" onclick="switchDTab('summary')">Summary</button>
-    <button class="dtab" id="dtab-tr" onclick="switchDTab('transcript')">Transcript</button>
-    <button class="dtab" id="dtab-com" onclick="switchDTab('comments')">Comments</button>
+    <button class="dtab on" id="dtab-sum" onclick="switchDTab('summary')">Santrauka</button>
+    <button class="dtab" id="dtab-tr" onclick="switchDTab('transcript')">Tekstas</button>
+    <button class="dtab" id="dtab-com" onclick="switchDTab('comments')">Komentarai</button>
   </div>
 
   <!-- SUMMARY TAB -->
   <div class="tab-content active" id="tab-summary">
     <div class="sum-section">
       <div class="sum-section-hdr">
-        <div class="sum-section-title">Overview</div>
+        <div class="sum-section-title">Apžvalga</div>
         <button class="copy-btn" onclick="copySummarySection('overview')" id="copy-overview-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          Copy
+          Kopijuoti
         </button>
       </div>
-      <div id="sum-overview" class="sum-empty">No summary yet.</div>
+      <div id="sum-overview" class="sum-empty">Santraukos dar nėra.</div>
     </div>
     <div class="sum-section">
       <div class="sum-section-hdr">
-        <div class="sum-section-title">Action Items</div>
+        <div class="sum-section-title">Veiksmų punktai</div>
       </div>
       <div id="sum-actions"></div>
       <button class="add-action-btn" onclick="addActionItem()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add action item
+        Pridėti veiksmo punktą
       </button>
     </div>
     <div class="sum-section">
       <div class="sum-section-hdr">
-        <div class="sum-section-title">Outline</div>
+        <div class="sum-section-title">Struktūra</div>
       </div>
-      <div id="sum-outline" class="sum-empty">No outline yet.</div>
+      <div id="sum-outline" class="sum-empty">Struktūros dar nėra.</div>
     </div>
 
-    <button class="sum-gen-btn" id="btn-edit-sum" onclick="editSummary()" style="background:var(--surface2);border:1px solid var(--border);color:var(--white);display:none;margin-top:8px">Edit summary</button>
-    <button class="btn-del" onclick="deleteRec()">Delete recording</button>
+    <button class="sum-gen-btn" id="btn-edit-sum" onclick="editSummary()" style="background:var(--surface2);border:1px solid var(--border);color:var(--white);display:none;margin-top:8px">Redaguoti santrauką</button>
+    <button class="btn-del" onclick="deleteRec()">Ištrinti įrašą</button>
   </div>
 
   <!-- TRANSCRIPT TAB -->
   <div class="tab-content" id="tab-transcript" style="display:flex;flex-direction:column;padding:0">
     <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px">
-      <div id="d-tr" class="tr-empty">No transcript yet.</div>
+      <div id="d-tr" class="tr-empty">Teksto dar nėra.</div>
     </div>
     <div style="background:var(--bg);border-top:1px solid var(--border);padding:12px 16px 16px;flex-shrink:0">
       <div style="display:flex;gap:10px;margin-bottom:10px;justify-content:center">
-        <button class="tr-icon-btn" id="btn-edit-tr" onclick="editTranscript()" disabled title="Edit">
+        <button class="tr-icon-btn" id="btn-edit-tr" onclick="editTranscript()" disabled title="Redaguoti">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
-        <button class="tr-icon-btn" id="btn-highlight-tr" onclick="toggleHighlight()" title="Highlight">
+        <button class="tr-icon-btn" id="btn-highlight-tr" onclick="toggleHighlight()" title="Pažymėti">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         </button>
-        <button class="tr-icon-btn" id="btn-cptr" onclick="copyTranscript()" disabled title="Copy">
+        <button class="tr-icon-btn" id="btn-cptr" onclick="copyTranscript()" disabled title="Kopijuoti">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         </button>
       </div>
       <div class="tr-lang">
-        <button class="lbtn on" id="tab-lt" onclick="setLang('lt')">Lithuanian</button>
-        <button class="lbtn" id="tab-en" onclick="setLang('en')">English</button>
+        <button class="lbtn on" id="tab-lt" onclick="setLang('lt')">Lietuvių</button>
+        <button class="lbtn" id="tab-en" onclick="setLang('en')">Angliškai</button>
       </div>
-      <button class="btn-pri" id="btn-tr" onclick="doTranscribe()" style="display:none;width:100%;margin-top:10px">Transcribe</button>
+      <button class="btn-pri" id="btn-tr" onclick="doTranscribe()" style="display:none;width:100%;margin-top:10px">Transkribuoti</button>
     </div>
     <div class="sticky-player" id="detail-player">
       <div class="player-time-row">
@@ -485,7 +485,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
         <button class="pbtn-sm" onclick="skipFwd()" title="+5s">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.5"/><text x="8" y="16" font-size="6" fill="currentColor" stroke="none">5</text></svg>
         </button>
-        <button class="pbtn-sm" onclick="addBookmark()" title="Bookmark">
+        <button class="pbtn-sm" onclick="addBookmark()" title="Žymė">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
         </button>
       </div>
@@ -496,29 +496,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   <div class="tab-content" id="tab-comments">
     <div class="comment-list" id="comment-list"></div>
     <div class="add-comment-wrap">
-      <textarea class="add-comment-input" id="comment-input" placeholder="Add a thought…"></textarea>
-      <button class="add-comment-btn" onclick="addComment()">Post</button>
+      <textarea class="add-comment-input" id="comment-input" placeholder="Pridėti pastabą…"></textarea>
+      <button class="add-comment-btn" onclick="addComment()">Paskelbti</button>
     </div>
   </div>
 </div>
 
 <!-- ── ACCOUNT ── -->
 <div id="p-account" class="page">
-  <div class="topbar"><div class="topbar-title">Account</div></div>
+  <div class="topbar"><div class="topbar-title">Paskyra</div></div>
   <div class="account-body">
     <div class="acc-sec">
-      <div class="acc-lbl">Profile</div>
-      <div class="acc-row"><span class="acc-row-l">Nickname</span><span class="acc-row-v" id="s-nick">–</span></div>
-      <div class="acc-row"><span class="acc-row-l">Email</span><span class="acc-row-v" id="s-email">–</span></div>
+      <div class="acc-lbl">Profilis</div>
+      <div class="acc-row"><span class="acc-row-l">Slapyvardis</span><span class="acc-row-v" id="s-nick">–</span></div>
+      <div class="acc-row"><span class="acc-row-l">El. paštas</span><span class="acc-row-v" id="s-email">–</span></div>
     </div>
     <div class="acc-sec">
-      <div class="acc-lbl">OpenAI API Key</div>
+      <div class="acc-lbl">OpenAI API raktas</div>
       <input class="acc-input" type="password" id="s-key" placeholder="sk-..."/>
 
-      <button class="acc-save-btn" onclick="saveKey()">Save key</button>
+      <button class="acc-save-btn" onclick="saveKey()">Išsaugoti raktą</button>
     </div>
     <div class="acc-sec">
-      <button class="btn-del" onclick="doSignOut()">Sign out</button>
+      <button class="btn-del" onclick="doSignOut()">Atsijungti</button>
     </div>
   </div>
 </div>
@@ -527,14 +527,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <div class="bottom-nav" id="bottom-nav">
   <button class="nav-btn on" id="nav-home" onclick="navTo('home')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    Home
+    Pradžia
   </button>
-  <button class="nav-rec-btn" onclick="goRecord()" title="Record">
+  <button class="nav-rec-btn" onclick="goRecord()" title="Įrašyti">
     <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
   </button>
   <button class="nav-btn" id="nav-account" onclick="navTo('account')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    Account
+    Paskyra
   </button>
 </div>
 
@@ -546,8 +546,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
     <textarea class="fs-modal-textarea" id="fs-modal-textarea" placeholder=""></textarea>
   </div>
   <div class="fs-modal-foot">
-    <button class="fs-modal-cancel" onclick="closeModal()">Cancel</button>
-    <button class="fs-modal-save" onclick="saveModal()">Save</button>
+    <button class="fs-modal-cancel" onclick="closeModal()">Atšaukti</button>
+    <button class="fs-modal-save" onclick="saveModal()">Išsaugoti</button>
   </div>
 </div>
 
@@ -591,29 +591,29 @@ function switchAuth(m){
   document.getElementById('atab-in').className='atab'+(m==='login'?' on':'');
   document.getElementById('atab-up').className='atab'+(m==='register'?' on':'');
   document.getElementById('a-email-wrap').style.display=m==='register'?'block':'none';
-  document.getElementById('btn-auth-do').textContent=m==='login'?'Sign in':'Create account';
+  document.getElementById('btn-auth-do').textContent=m==='login'?'Prisijungti':'Sukurti paskyrą';
   document.getElementById('a-err').textContent='';
 }
 async function doAuth(){
   const n=document.getElementById('a-nick').value.trim();
   const p=document.getElementById('a-pass').value;
   const btn=document.getElementById('btn-auth-do');
-  if(!n||!p){setErr('Fill in all fields.');return;}
+  if(!n||!p){setErr('Užpildykite visus laukus.');return;}
   btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
   try{
     if(amode==='register'){
       const e=document.getElementById('a-email').value.trim();
-      if(!e){setErr('Enter email.');btn.disabled=false;btn.textContent='Create account';return;}
+      if(!e){setErr('Įveskite el. paštą.');btn.disabled=false;btn.textContent='Sukurti paskyrą';return;}
       const cr=await auth.createUserWithEmailAndPassword(e,p);
       await db.collection('users').doc(cr.user.uid).set({nickname:n,email:e,createdAt:new Date().toISOString()});
     }else{
       const q=await db.collection('users').where('nickname','==',n).limit(1).get();
-      if(q.empty){setErr('Nickname not found.');btn.disabled=false;btn.textContent='Sign in';return;}
+      if(q.empty){setErr('Slapyvardis nerastas.');btn.disabled=false;btn.textContent='Prisijungti';return;}
       await auth.signInWithEmailAndPassword(q.docs[0].data().email,p);
     }
   }catch(e){
     setErr(e.message.replace('Firebase: ','').replace(/\(auth[^)]*\)/,'').trim());
-    btn.disabled=false;btn.textContent=amode==='login'?'Sign in':'Create account';
+    btn.disabled=false;btn.textContent=amode==='login'?'Prisijungti':'Sukurti paskyrą';
   }
 }
 function setErr(m){document.getElementById('a-err').textContent=m;}
@@ -676,7 +676,7 @@ async function loadHomeList(){
 function renderList(recs,containerId){
   const el=document.getElementById(containerId);
   if(!recs.length){
-    el.innerHTML='<div class="empty-state"><p>No recordings yet</p><p>Tap the mic button to start</p></div>';
+    el.innerHTML='<div class="empty-state"><p>Įrašų dar nėra</p><p>Palieskite mikrofono mygtuką, kad pradėtumėte</p></div>';
     return;
   }
   const groups={};
@@ -684,18 +684,18 @@ function renderList(recs,containerId){
     const d=new Date(r.createdAt);
     const today=new Date();const yesterday=new Date(today);yesterday.setDate(today.getDate()-1);
     let lbl;
-    if(d.toDateString()===today.toDateString())lbl='Today';
-    else if(d.toDateString()===yesterday.toDateString())lbl='Yesterday';
-    else lbl=d.toLocaleDateString('en-GB',{weekday:'long',month:'long',day:'numeric'});
+    if(d.toDateString()===today.toDateString())lbl='Šiandien';
+    else if(d.toDateString()===yesterday.toDateString())lbl='Vakar';
+    else lbl=d.toLocaleDateString('lt-LT',{weekday:'long',month:'long',day:'numeric'});
     if(!groups[lbl])groups[lbl]=[];
     groups[lbl].push(r);
   });
   el.innerHTML=Object.entries(groups).map(([lbl,items])=>
     `<div class="date-group"><div class="date-lbl">${lbl}</div>${items.map(r=>`
       <div class="rec-card" onclick="openDetail('${r.id}')">
-        <div class="rec-card-title">${esc(r.title||'Untitled')}</div>
+        <div class="rec-card-title">${esc(r.title||'Be pavadinimo')}</div>
         <div class="rec-card-meta">
-          <span>${new Date(r.createdAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span>
+          <span>${new Date(r.createdAt).toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'})}</span>
           <span>·</span>
           <span>${ms2t(r.durationMs||0)}</span>
         </div>
@@ -724,7 +724,7 @@ function doSearch(q){
 function renderSearchList(recs,q,containerId){
   const el=document.getElementById(containerId);
   if(!recs.length){
-    el.innerHTML='<div class="empty-state"><p>No results</p><p>Try different words</p></div>';
+    el.innerHTML='<div class="empty-state"><p>Nieko nerasta</p><p>Pabandykite kitus žodžius</p></div>';
     return;
   }
   el.innerHTML=recs.map(r=>{
@@ -741,9 +741,9 @@ function renderSearchList(recs,q,containerId){
       preview='';
     }
     return`<div class="rec-card" onclick="openDetail('${r.id}')">
-      <div class="rec-card-title">${highlight(r.title||'Untitled',q)}</div>
+      <div class="rec-card-title">${highlight(r.title||'Be pavadinimo',q)}</div>
       <div class="rec-card-meta">
-        <span>${new Date(r.createdAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span>
+        <span>${new Date(r.createdAt).toLocaleTimeString('lt-LT',{hour:'2-digit',minute:'2-digit'})}</span>
         <span>·</span>
         <span>${ms2t(r.durationMs||0)}</span>
       </div>
@@ -759,7 +759,7 @@ function goRecord(){
   document.getElementById('rec-ring').style.opacity='1';
   document.getElementById('rtimer').textContent='00:00';
   document.getElementById('rtimer').style.display='none';
-  document.getElementById('rhint').textContent='Tap to start recording';
+  document.getElementById('rhint').textContent='Palieskite, kad pradėtumėte įrašymą';
   document.getElementById('rhint').style.display='none';
   document.getElementById('rec-choose').style.display='flex';
   document.getElementById('rctrls').style.display='none';
@@ -788,17 +788,17 @@ async function toggleRec(){
     mr.start(100);rstate='recording';rms=0;
     tick=setInterval(()=>{rms+=100;document.getElementById('rtimer').textContent=ms2t(rms);},100);
     document.getElementById('rec-ring').className='rec-ring on';
-    document.getElementById('rhint').textContent='Recording — tap to pause';
+    document.getElementById('rhint').textContent='Įrašoma — palieskite, kad pristabdytumėte';
     document.getElementById('rctrls').style.display='flex';
     document.getElementById('waveform').className='waveform show';
-  }catch(e){toast('Microphone unavailable');}
+  }catch(e){toast('Mikrofonas nepasiekiamas');}
 }
 function pauseRec(){
   if(rstate!=='recording')return;
   mr.pause();clearInterval(tick);rstate='paused';
   document.getElementById('rec-ring').className='rec-ring paused';
   stopWave();
-  document.getElementById('rhint').textContent='Paused — tap to resume';
+  document.getElementById('rhint').textContent='Pristabdyta — palieskite, kad tęstumėte';
   document.getElementById('btn-pause').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
   document.getElementById('btn-pause').onclick=resumeRec;
 }
@@ -809,7 +809,7 @@ function resumeRec(){
   rstate='recording';
   document.getElementById('rec-ring').className='rec-ring on';
   startWave();
-  document.getElementById('rhint').textContent='Recording — tap to pause';
+  document.getElementById('rhint').textContent='Įrašoma — palieskite, kad pristabdytumėte';
   document.getElementById('btn-pause').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
   document.getElementById('btn-pause').onclick=pauseRec;
 }
@@ -820,9 +820,9 @@ function stopRec(){
   document.getElementById('rec-ring').className='rec-ring paused';
   document.getElementById('rctrls').style.display='none';
   document.getElementById('rec-foot').style.display='flex';
-  document.getElementById('rhint').textContent='Done — save or cancel';
+  document.getElementById('rhint').textContent='Atlikta — išsaugokite arba atšaukite';
   document.getElementById('rec-title-wrap').style.display='block';
-  document.getElementById('rec-title-input').value='Recording, '+new Date().toLocaleString('en-GB',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('rec-title-input').value='Įrašas, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 let _uploadBlob=null;
 function triggerUpload(){
@@ -838,12 +838,12 @@ function handleUpload(e){
   document.getElementById('rhint').style.display='block';
   document.getElementById('rec-ring').style.opacity='0.3';
   document.getElementById('rtimer').textContent=file.name.length>24?file.name.slice(0,24)+'…':file.name;
-  document.getElementById('rhint').textContent='File ready to transcribe';
+  document.getElementById('rhint').textContent='Failas paruoštas transkribavimui';
   document.getElementById('upload-foot').style.display='flex';
   document.getElementById('rec-foot').style.display='none';
   document.getElementById('rctrls').style.display='none';
   document.getElementById('rec-title-wrap').style.display='block';
-  document.getElementById('rec-title-input').value=file.name.replace(/\.[^.]+$/,'').slice(0,60)||'Recording, '+new Date().toLocaleString('en-GB',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('rec-title-input').value=file.name.replace(/\.[^.]+$/,'').slice(0,60)||'Įrašas, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
   e.target.value='';
 }
 function cancelUpload(){
@@ -858,14 +858,14 @@ function cancelUpload(){
   document.getElementById('rec-title-input').value='';
 }
 async function confirmUpload(){
-  if(!_uploadBlob){toast('No file selected.');return;}
+  if(!_uploadBlob){toast('Failas nepasirinktas.');return;}
   const blob=_uploadBlob;
   const inputTitle=document.getElementById('rec-title-input').value.trim();
   _uploadBlob=null;
   show('p-transcribing');
   const estSec=Math.max(5,Math.round(30*0.15));
   const estEl=document.getElementById('tr-estimate');
-  if(estEl)estEl.textContent='Your text will appear in about '+estSec+' seconds';
+  if(estEl)estEl.textContent='Tekstas bus paruoštas maždaug per '+estSec+' sek.';
   await autoTranscribe(blob,0,inputTitle);
 }
 function cancelRecord(){
@@ -878,7 +878,7 @@ function cancelRecord(){
   goHome();
 }
 async function saveRecord(){
-  if(!chunks.length){toast('Nothing recorded.');return;}
+  if(!chunks.length){toast('Nieko neįrašyta.');return;}
   clearInterval(tick);stopWave();
   const dur=rms;
   const done=async blob=>{
@@ -887,7 +887,7 @@ async function saveRecord(){
     // Show estimate based on duration
     const estSec=Math.max(5,Math.round(dur/1000*0.15));
     const estEl=document.getElementById('tr-estimate');
-    if(estEl)estEl.textContent='Your text will appear in about '+estSec+(estSec===1?' second':' seconds');
+    if(estEl)estEl.textContent='Tekstas bus paruoštas maždaug per '+estSec+' sek.';
     await autoTranscribe(blob,dur);
   };
   if(mr&&mr.state!=='inactive'){mr.onstop=()=>done(new Blob(chunks,{type:mr.mimeType||'audio/webm'}));mr.stop();}
@@ -915,7 +915,7 @@ async function autoTranscribe(blob,dur,customTitle){
     const id=crypto.randomUUID();
     const now=new Date().toISOString();
     const inputTitle=customTitle||document.getElementById('rec-title-input').value.trim();
-    const title=inputTitle||'Recording, '+new Date().toLocaleString('en-GB',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const title=inputTitle||'Įrašas, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
     await idbSaveBlob(id,blob);
     const rec={id,title,durationMs:dur,createdAt:now,updatedAt:now,transcript,transcriptEn:null,transcriptionStatus:'completed',summaryData:null,actionItems:[],comments:[]};
     await db.collection('users').doc(user.uid).collection('recordings').doc(id).set(rec);
@@ -945,14 +945,14 @@ async function autoTranscribe(blob,dur,customTitle){
         })();
       }catch(e){
         console.warn('LT summary failed:',e);
-        toast('Summary generation failed: '+e.message);
+        toast('Nepavyko sugeneruoti santraukos: '+e.message);
       }
     }
     await openDetail(id);
-  }catch(err){toast('Error: '+err.message);goHome();}
+  }catch(err){toast('Klaida: '+err.message);goHome();}
 }
 async function translateToEn(transcript,k){
-  if(!k)throw new Error('No API key');
+  if(!k)throw new Error('Nėra API rakto');
   const r=await fetch('https://api.openai.com/v1/chat/completions',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},
@@ -962,9 +962,9 @@ async function translateToEn(transcript,k){
     ]})
   });
   const d=await r.json();
-  if(!r.ok)throw new Error(d.error?.message||'Translation error');
+  if(!r.ok)throw new Error(d.error?.message||'Vertimo klaida');
   const txt=d.choices?.[0]?.message?.content?.trim()||'';
-  if(!txt)throw new Error('Empty translation');
+  if(!txt)throw new Error('Tuščias vertimas');
   return txt;
 }
 
@@ -1000,15 +1000,15 @@ async function openDetail(id){
       loadAudioBlob(blob);
     }else{
       // Audio not in local storage (old recording or different device)
-      document.getElementById('p-time').textContent='Audio not on this device';
+      document.getElementById('p-time').textContent='Garso įrašo nėra šiame įrenginyje';
     }
   }).catch(()=>{
-    document.getElementById('p-time').textContent='Audio unavailable';
+    document.getElementById('p-time').textContent='Garso įrašas nepasiekiamas';
   });
   // Fetch fresh data from Firestore in background
   db.collection('users').doc(user.uid).collection('recordings').doc(id).get().then(s=>{
     if(recId!==id)return;
-    if(!s.exists){toast('Not found.');goHome();return;}
+    if(!s.exists){toast('Nerasta.');goHome();return;}
     const rec=s.data();
     renderDetail(rec);
     // Update cache
@@ -1017,8 +1017,8 @@ async function openDetail(id){
   });
 }
 function renderDetail(rec){
-  document.getElementById('d-title-disp').textContent=rec.title||'Untitled';
-  document.getElementById('d-date').textContent=new Date(rec.createdAt).toLocaleString('en-GB',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('d-title-disp').textContent=rec.title||'Be pavadinimo';
+  document.getElementById('d-date').textContent=new Date(rec.createdAt).toLocaleString('lt-LT',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
   document.getElementById('d-dur').textContent=ms2t(rec.durationMs||0);
   // transcript
   const tr=lang==='lt'?rec.transcript:rec.transcriptEn;
@@ -1034,7 +1034,7 @@ function renderDetail(rec){
     }else if(highlightMode){
       wrapTranscriptWords(tc);
     }
-  }else{tc.className='tr-empty';tc.textContent='No transcript yet.';}
+  }else{tc.className='tr-empty';tc.textContent='Teksto dar nėra.';}
   document.getElementById('btn-cptr').disabled=!tr;
   document.getElementById('btn-edit-tr').disabled=!tr;
   document.getElementById('btn-tr').style.display=tr?'none':'block';
@@ -1049,7 +1049,7 @@ function renderSummary(rec){
   const sd=lang==='lt'?rec.summaryData:rec.summaryDataEn;
   const ov=document.getElementById('sum-overview');
   if(sd?.overview){ov.className='sum-text';ov.textContent=sd.overview;}
-  else{ov.className='sum-empty';ov.textContent='No summary yet.';}
+  else{ov.className='sum-empty';ov.textContent='Santraukos dar nėra.';}
   // action items
   const ai=rec.actionItems||[];
   const aic=document.getElementById('sum-actions');
@@ -1075,12 +1075,12 @@ function renderSummary(rec){
         <div class="outline-section-title">${esc(sec.title)}<span class="outline-ts">${sec.time||''}</span></div>
         ${(sec.bullets||[]).map(b=>`<div class="outline-bullet">${esc(b)}</div>`).join('')}
       </div>`).join('');
-  }else{ol.className='sum-empty';ol.innerHTML='No outline yet.';}
+  }else{ol.className='sum-empty';ol.innerHTML='Struktūros dar nėra.';}
   const hasSummary=!!(sd?.overview);
   const generating=!!(rec._generatingSummary);
   if(!hasSummary&&!generating){
     ov.className='sum-empty';
-    ov.textContent='No summary yet.';
+    ov.textContent='Santraukos dar nėra.';
   }
   document.getElementById('btn-edit-sum').style.display=hasSummary?'block':'none';
 }
@@ -1091,7 +1091,7 @@ function renderComments(comments){
     <div class="comment">
       <div style="display:flex;align-items:flex-start;gap:8px">
         <div style="flex:1">
-          <div class="comment-author">${esc(c.author)} · ${new Date(c.createdAt).toLocaleString('en-GB',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+          <div class="comment-author">${esc(c.author)} · ${new Date(c.createdAt).toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
           <div class="comment-text">${esc(c.text)}</div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;padding-top:2px">
@@ -1108,24 +1108,24 @@ function renderComments(comments){
 async function editComment(i){
   const rec=await getRec();if(!rec)return;
   const current=(rec.comments||[])[i]?.text||'';
-  openModal('Edit comment',current,async(val)=>{
+  openModal('Redaguoti komentarą',current,async(val)=>{
     if(!val.trim()||val.trim()===current)return;
     const rec2=await getRec();if(!rec2)return;
     const comments=[...(rec2.comments||[])];
     comments[i]={...comments[i],text:val.trim()};
     await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({comments});
     renderComments(comments);
-    toast('Saved ✓');
+    toast('Išsaugota ✓');
   });
 }
 async function deleteComment(i){
-  if(!confirm('Delete this comment?'))return;
+  if(!confirm('Ištrinti šį komentarą?'))return;
   const rec=await getRec();if(!rec)return;
   const comments=[...(rec.comments||[])];
   comments.splice(i,1);
   await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({comments});
   renderComments(comments);
-  toast('Deleted.');
+  toast('Ištrinta.');
 }
 
 const DTAB_IDS={summary:'dtab-sum',transcript:'dtab-tr',comments:'dtab-com'};
@@ -1153,14 +1153,14 @@ async function setLang(l){
       // Translate if needed
       if(!rec.transcriptEn&&rec.transcript){
         document.getElementById('d-tr').className='tr-empty';
-        document.getElementById('d-tr').textContent='Translating…';
+        document.getElementById('d-tr').textContent='Verčiama…';
         try{
           const translated=await translateToEn(rec.transcript,k);
           if(translated){
             await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({transcriptEn:translated,updatedAt:new Date().toISOString()});
             rec.transcriptEn=translated;
           }
-        }catch(e){toast('Translation error: '+e.message);}
+        }catch(e){toast('Vertimo klaida: '+e.message);}
       }
       // Auto-generate EN summary if not yet
       if(!rec.summaryDataEn&&rec.transcriptEn){
@@ -1171,7 +1171,7 @@ async function setLang(l){
         try{
           // Show generating state
           const ov=document.getElementById('sum-overview');
-          if(ov){ov.className='sum-empty';ov.textContent='Generating summary…';}
+          if(ov){ov.className='sum-empty';ov.textContent='Generuojama santrauka…';}
           const sd=await generateSummaryData(rec.transcriptEn,'en');
           const upd={summaryDataEn:sd,updatedAt:new Date().toISOString()};
           await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update(upd);
@@ -1207,32 +1207,32 @@ async function saveModal(){
 async function editTranscript(){
   const rec=await getRec();if(!rec)return;
   const current=lang==='lt'?rec.transcript:rec.transcriptEn;
-  openModal('Edit transcript',current,async(val)=>{
+  openModal('Redaguoti tekstą',current,async(val)=>{
     if(val===current)return;
     const upd=lang==='lt'?{transcript:val,updatedAt:new Date().toISOString()}:{transcriptEn:val,updatedAt:new Date().toISOString()};
     await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update(upd);
-    renderDetail({...rec,...upd});toast('Saved ✓');
+    renderDetail({...rec,...upd});toast('Išsaugota ✓');
   });
 }
 async function editSummary(){
   const rec=await getRec();if(!rec)return;
   const sd=lang==='lt'?rec.summaryData:rec.summaryDataEn;
   const current=sd?.overview||'';
-  openModal('Edit overview',current,async(val)=>{
+  openModal('Redaguoti apžvalgą',current,async(val)=>{
     if(val===current)return;
     const newSd={...(sd||{}),overview:val};
     const upd=lang==='lt'?{summaryData:newSd,updatedAt:new Date().toISOString()}:{summaryDataEn:newSd,updatedAt:new Date().toISOString()};
     await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update(upd);
-    renderSummary({...rec,...upd});toast('Saved ✓');
+    renderSummary({...rec,...upd});toast('Išsaugota ✓');
   });
 }
 async function editTitle(){
   const cur=document.getElementById('d-title-disp').textContent;
-  const t=prompt('Edit title:',cur);
+  const t=prompt('Redaguoti pavadinimą:',cur);
   if(!t||t===cur)return;
   await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({title:t.trim(),updatedAt:new Date().toISOString()});
   document.getElementById('d-title-disp').textContent=t.trim();
-  toast('Saved ✓');loadHomeList();
+  toast('Išsaugota ✓');loadHomeList();
 }
 
 async function toggleAction(i){
@@ -1243,7 +1243,7 @@ async function toggleAction(i){
   renderSummary({...rec,actionItems:items});
 }
 async function addActionItem(){
-  openModal('New action item','',async(val)=>{
+  openModal('Naujas veiksmo punktas','',async(val)=>{
     if(!val.trim())return;
     const rec=await getRec();if(!rec)return;
     const items=[...(rec.actionItems||[]),{text:val.trim(),done:false,createdAt:new Date().toISOString()}];
@@ -1252,18 +1252,18 @@ async function addActionItem(){
   });
 }
 async function deleteActionItem(i){
-  if(!confirm('Delete this action item?'))return;
+  if(!confirm('Ištrinti šį veiksmo punktą?'))return;
   const rec=await getRec();if(!rec)return;
   const items=[...(rec.actionItems||[])];
   items.splice(i,1);
   await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({actionItems:items});
   renderSummary({...rec,actionItems:items});
-  toast('Deleted.');
+  toast('Ištrinta.');
 }
 async function editActionItem(i){
   const rec=await getRec();if(!rec)return;
   const current=(rec.actionItems||[])[i]?.text||'';
-  openModal('Edit action item',current,async(val)=>{
+  openModal('Redaguoti veiksmo punktą',current,async(val)=>{
     if(!val.trim()||val.trim()===current)return;
     const rec2=await getRec();if(!rec2)return;
     const items=[...(rec2.actionItems||[])];
@@ -1280,13 +1280,13 @@ async function addComment(){
   await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({comments});
   renderComments(comments);
   document.getElementById('comment-input').value='';
-  toast('Comment added ✓');
+  toast('Komentaras pridėtas ✓');
 }
 
 async function copySummarySection(sec){
   const rec=await getRec();if(!rec)return;
   const sd=lang==='lt'?rec.summaryData:rec.summaryDataEn;
-  if(!sd){toast('No summary yet.');return;}
+  if(!sd){toast('Santraukos dar nėra.');return;}
   let parts=[];
   if(sd.overview)parts.push(sd.overview);
   if(sd.outline&&sd.outline.length){
@@ -1302,7 +1302,7 @@ function copyText(txt){
   // Try modern clipboard API (works on https)
   if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function'){
     navigator.clipboard.writeText(txt).then(()=>{
-      toast('Copied ✓');
+      toast('Nukopijuota ✓');
     }).catch(()=>_iosCopy(txt));
     return;
   }
@@ -1319,24 +1319,24 @@ function _iosCopy(txt){
   let ok=false;
   try{ok=document.execCommand('copy');}catch(e){}
   document.body.removeChild(inp);
-  if(ok){toast('Copied ✓');}
+  if(ok){toast('Nukopijuota ✓');}
   else{
     // Last resort: show share sheet on iOS
     if(navigator.share){navigator.share({text:txt}).catch(()=>{});}
-    else{toast('Copy failed — select text manually');}
+    else{toast('Nepavyko nukopijuoti — pažymėkite tekstą rankiniu būdu');}
   }
 }
 async function copyTranscript(){
   const rec=await getRec();
   const t=lang==='lt'?rec?.transcript:rec?.transcriptEn;
-  if(!t){toast('Nothing to copy.');return;}
+  if(!t){toast('Nėra ko kopijuoti.');return;}
   await copyText(t);
 }
 async function deleteRec(){
-  if(!confirm('Delete this recording permanently?'))return;
+  if(!confirm('Ištrinti šį įrašą negrįžtamai?'))return;
   unloadAudio();
   await db.collection('users').doc(user.uid).collection('recordings').doc(recId).delete();
-  toast('Deleted.');goHome();
+  toast('Ištrinta.');goHome();
 }
 
 // ── PLAYER ──
@@ -1382,9 +1382,9 @@ function toggleHighlight(){
   if(highlightMode){
     const el=document.getElementById('d-tr');
     wrapTranscriptWords(el);
-    toast('Tap words to highlight');
+    toast('Palieskite žodžius, kad pažymėtumėte');
   }else{
-    toast('Highlights saved');
+    toast('Žymėjimai išsaugoti');
   }
 }
 function wrapTranscriptWords(el){
@@ -1433,19 +1433,19 @@ function toggleWordHighlight(span){
 }
 function handleTranscriptClick(e){}
 async function addBookmark(){
-  if(!ael){toast('No audio loaded.');return;}
+  if(!ael){toast('Garso įrašas neįkeltas.');return;}
   const ts=ms2t(ael.currentTime*1000);
   const rec=await getRec();if(!rec)return;
-  const comments=[...(rec.comments||[]),{text:`📌 Bookmark at ${ts}`,author:nick,createdAt:new Date().toISOString()}];
+  const comments=[...(rec.comments||[]),{text:`📌 Žymė ties ${ts}`,author:nick,createdAt:new Date().toISOString()}];
   await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({comments});
   renderComments(comments);
-  toast(`Bookmark added at ${ts} ✓`);
+  toast(`Žymė pridėta ties ${ts} ✓`);
 }
 
 // ── API ──
 async function transcribeBlob(blob){
   const k=getKey();
-  if(!k)throw new Error('Add your OpenAI API key in Account settings.');
+  if(!k)throw new Error('Pridėkite savo OpenAI API raktą Paskyros nustatymuose.');
   return new Promise((ok,fail)=>{
     const fr=new FileReader();
     fr.onload=async e=>{
@@ -1458,8 +1458,8 @@ async function transcribeBlob(blob){
           body:JSON.stringify({audio:b64,mimeType:mtype})
         });
         const d=await r.json();
-        if(!r.ok)throw new Error(d.error||'Transcription error');
-        if(!d.text)throw new Error('Empty transcription');
+        if(!r.ok)throw new Error(d.error||'Transkripcijos klaida');
+        if(!d.text)throw new Error('Tuščia transkripcija');
         ok(d.text);
       }catch(err){fail(err);}
     };
@@ -1469,7 +1469,7 @@ async function transcribeBlob(blob){
 }
 async function doTranscribe(){
   const btn=document.getElementById('btn-tr');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Transcribing…';
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Transkribuojama…';
   try{
     const rec=await getRec();if(!rec)return;
     const blob=await idbGetBlob(recId);
@@ -1477,18 +1477,18 @@ async function doTranscribe(){
     const transcript=await transcribeBlob(blob);
     const upd=lang==='lt'?{transcript,transcriptionStatus:'completed',updatedAt:new Date().toISOString()}:{transcriptEn:transcript,updatedAt:new Date().toISOString()};
     await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update(upd);
-    renderDetail({...rec,...upd});toast('Transcription done ✓');
-  }catch(e){toast('Error: '+e.message);}
-  finally{btn.disabled=false;btn.textContent='Re-transcribe';}
+    renderDetail({...rec,...upd});toast('Transkripcija baigta ✓');
+  }catch(e){toast('Klaida: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='Transkribuoti iš naujo';}
 }
 async function generateSummaryData(transcript,l){
   const k=getKey();
-  if(!k)throw new Error('Add your OpenAI API key in Account settings.');
+  if(!k)throw new Error('Pridėkite savo OpenAI API raktą Paskyros nustatymuose.');
   const sysLT=`Tu esi tikslus asmeninio užrašų asistentas. Grąžink JSON objektą su šiais laukais:\n{"overview":"trumpas 2-4 sakinių aprašymas","outline":[{"title":"Sekcijos pavadinimas","time":"0:00","bullets":["punktas1","punktas2"]}]}\nTik JSON, be jokių komentarų ar markdown.`;
   const sysEN=`You are a precise personal notes assistant. Return a JSON object with these fields:\n{"overview":"short 2-4 sentence summary","outline":[{"title":"Section title","time":"0:00","bullets":["point1","point2"]}]}\nOnly JSON, no comments or markdown.`;
   const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'gpt-4o',max_tokens:1500,messages:[{role:'system',content:l==='lt'?sysLT:sysEN},{role:'user',content:transcript}]})});
   const d=await r.json();
-  if(!r.ok)throw new Error(d.error?.message||'Summary error');
+  if(!r.ok)throw new Error(d.error?.message||'Santraukos klaida');
   let raw=d.choices?.[0]?.message?.content?.trim()||'';
   raw=raw.replace(/```json|```/g,'').trim();
   return JSON.parse(raw);
@@ -1497,13 +1497,13 @@ async function doSummarize(){
   // kept for manual retry via edit summary flow
   const rec=await getRec();if(!rec)return;
   const tr=lang==='lt'?rec.transcript:rec.transcriptEn;
-  if(!tr){toast('Transcribe first.');return;}
+  if(!tr){toast('Pirmiausia transkribuokite.');return;}
   try{
     const sd=await generateSummaryData(tr,lang);
     const upd=lang==='lt'?{summaryData:sd,updatedAt:new Date().toISOString()}:{summaryDataEn:sd,updatedAt:new Date().toISOString()};
     await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update(upd);
-    renderSummary({...rec,...upd});toast('Summary ready ✓');
-  }catch(e){toast('Error: '+e.message);}
+    renderSummary({...rec,...upd});toast('Santrauka paruošta ✓');
+  }catch(e){toast('Klaida: '+e.message);}
 }
 
 
