@@ -258,7 +258,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 /* ── SPINNER / TOAST ── */
 .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:sp .65s linear infinite;vertical-align:middle;margin-right:7px}
 @keyframes sp{to{transform:rotate(360deg)}}
-.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);color:var(--white);font-size:13px;font-weight:500;padding:10px 20px;border-radius:100px;opacity:0;transition:opacity .18s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);color:var(--white);font-size:13px;font-weight:500;padding:10px 20px;border-radius:16px;opacity:0;transition:opacity .18s;pointer-events:none;z-index:999;max-width:85vw;width:max-content;white-space:normal;text-align:center;box-sizing:border-box;line-height:1.4}
 .toast.show{opacity:1}
 </style>
 </head>
@@ -386,7 +386,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <div id="p-transcribing" class="page no-nav">
   <div class="tr-body">
     <img src="https://i.imgur.com/IiGYaxv.gif" style="width:140px;height:140px;object-fit:contain;border-radius:16px" alt="robot"/>
-    <h3>Klausoma ir konvertuojama į tekstą…</h3>
+    <h3>Klausoma ir konvertuojama…</h3>
     <p id="tr-estimate" style="font-size:13px;color:var(--muted)">Tekstas pasirodys, kai bus paruoštas</p>
     <div class="dots"><span></span><span></span><span></span></div>
   </div>
@@ -965,7 +965,7 @@ async function autoTranscribe(blob,dur,customTitle){
       }
     }
   }catch(err){
-    toast('Įrašas išsaugotas, bet konvertavimas į tekstą nepavyko — pabandykite dar kartą įrašo puslapyje.');
+    toast('Įrašas išsaugotas, bet konvertavimas nepavyko. Bandykite dar kartą.');
   }
   await openDetail(id);
 }
