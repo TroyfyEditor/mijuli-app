@@ -246,6 +246,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .fs-modal{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column}
 .fs-modal.open{display:flex}
 .fs-modal-body{flex:1;padding:16px 16px 0;display:flex;flex-direction:column}
+.fs-modal-title{font-size:17px;font-weight:600;color:var(--white);margin-bottom:12px}
 .fs-modal-textarea{flex:1;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:16px;font-size:15px;color:var(--white);outline:none;font-family:inherit;resize:none;line-height:1.7;-webkit-appearance:none}
 .fs-modal-textarea:focus{border-color:var(--blue)}
 .fs-modal-foot{display:flex;gap:10px;padding:16px;flex-shrink:0}
@@ -265,7 +266,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <!-- SPLASH -->
 <div id="splash" style="position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9999;transition:opacity .5s ease">
   <div style="font-size:38px;font-weight:700;letter-spacing:-.8px;color:#A6A69E;opacity:0;transition:opacity .3s ease" id="splash-logo">miJuli</div>
-  <div id="splash-tagline" style="font-size:13px;color:rgba(166,166,158,0);transition:color .3s ease;letter-spacing:.02em">Klausyk. Transkribuok. Apibendrink.</div>
+  <div id="splash-tagline" style="font-size:13px;color:rgba(166,166,158,0);transition:color .3s ease;letter-spacing:.02em">Kiekviena mintis verta būti išsaugota.</div>
 </div>
 <div class="app">
 
@@ -273,13 +274,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <div id="p-auth" class="page no-nav">
   <div class="auth-wrap">
     <div class="auth-logo" style="color:#A6A69E">miJuli</div>
-    <div class="auth-tag">Klausyk. Transkribuok. Apibendrink.</div>
+    <div class="auth-tag">Kiekviena mintis verta būti išsaugota.</div>
     <div class="auth-tabs">
       <button class="atab on" id="atab-in" onclick="switchAuth('login')">Prisijungti</button>
       <button class="atab" id="atab-up" onclick="switchAuth('register')">Registruotis</button>
     </div>
-    <div class="afield"><label>Slapyvardis</label><input type="text" id="a-nick" placeholder="tavovardis" autocomplete="username"/></div>
-    <div class="afield" id="a-email-wrap" style="display:none"><label>El. paštas</label><input type="email" id="a-email" placeholder="tu@pastas.lt"/></div>
+    <div class="afield"><label>Slapyvardis</label><input type="text" id="a-nick" placeholder="" autocomplete="username"/></div>
+    <div class="afield" id="a-email-wrap" style="display:none"><label>El. paštas</label><input type="email" id="a-email" placeholder=""/></div>
     <div class="afield"><label>Slaptažodis</label><input type="password" id="a-pass" placeholder="••••••••"/></div>
     <div class="auth-err" id="a-err"></div>
     <button class="btn-auth" id="btn-auth-do" onclick="doAuth()">Prisijungti</button>
@@ -373,11 +374,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   </div>
   <div class="rec-foot" id="rec-foot" style="display:none">
     <button class="btn-cancel" onclick="cancelRecord()">Atšaukti</button>
-    <button class="btn-save" onclick="saveRecord()">Išsaugoti ir transkribuoti</button>
+    <button class="btn-save" onclick="saveRecord()">Išsaugoti ir konvertuoti į tekstą</button>
   </div>
   <div class="rec-foot" id="upload-foot" style="display:none">
     <button class="btn-cancel" onclick="cancelUpload()">Atšaukti</button>
-    <button class="btn-save" onclick="confirmUpload()">Išsaugoti ir transkribuoti</button>
+    <button class="btn-save" onclick="confirmUpload()">Išsaugoti ir konvertuoti į tekstą</button>
   </div>
 </div>
 
@@ -385,7 +386,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <div id="p-transcribing" class="page no-nav">
   <div class="tr-body">
     <img src="https://i.imgur.com/IiGYaxv.gif" style="width:140px;height:140px;object-fit:contain;border-radius:16px" alt="robot"/>
-    <h3>Klausoma ir transkribuojama…</h3>
+    <h3>Klausoma ir konvertuojama į tekstą…</h3>
     <p id="tr-estimate" style="font-size:13px;color:var(--muted)">Tekstas pasirodys, kai bus paruoštas</p>
     <div class="dots"><span></span><span></span><span></span></div>
   </div>
@@ -424,12 +425,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
     </div>
     <div class="sum-section">
       <div class="sum-section-hdr">
-        <div class="sum-section-title">Veiksmų punktai</div>
+        <div class="sum-section-title">Užduotys</div>
       </div>
       <div id="sum-actions"></div>
       <button class="add-action-btn" onclick="addActionItem()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Pridėti veiksmo punktą
+        Pridėti užduotį
       </button>
     </div>
     <div class="sum-section">
@@ -464,7 +465,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
         <button class="lbtn on" id="tab-lt" onclick="setLang('lt')">Lietuvių</button>
         <button class="lbtn" id="tab-en" onclick="setLang('en')">Angliškai</button>
       </div>
-      <button class="btn-pri" id="btn-tr" onclick="doTranscribe()" style="display:none;width:100%;margin-top:10px">Transkribuoti</button>
+      <button class="btn-pri" id="btn-tr" onclick="doTranscribe()" style="display:none;width:100%;margin-top:10px">Konvertuoti į tekstą</button>
     </div>
     <div class="sticky-player" id="detail-player">
       <div class="player-time-row">
@@ -543,6 +544,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <!-- FULL SCREEN EDIT MODAL -->
 <div class="fs-modal" id="fs-modal">
   <div class="fs-modal-body">
+    <div class="fs-modal-title" id="fs-modal-title"></div>
     <textarea class="fs-modal-textarea" id="fs-modal-textarea" placeholder=""></textarea>
   </div>
   <div class="fs-modal-foot">
@@ -822,7 +824,7 @@ function stopRec(){
   document.getElementById('rec-foot').style.display='flex';
   document.getElementById('rhint').textContent='Atlikta — išsaugokite arba atšaukite';
   document.getElementById('rec-title-wrap').style.display='block';
-  document.getElementById('rec-title-input').value='Įrašas, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('rec-title-input').value='Audio, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 let _uploadBlob=null;
 function triggerUpload(){
@@ -838,12 +840,12 @@ function handleUpload(e){
   document.getElementById('rhint').style.display='block';
   document.getElementById('rec-ring').style.opacity='0.3';
   document.getElementById('rtimer').textContent=file.name.length>24?file.name.slice(0,24)+'…':file.name;
-  document.getElementById('rhint').textContent='Failas paruoštas transkribavimui';
+  document.getElementById('rhint').textContent='Failas paruoštas konvertavimui į tekstą';
   document.getElementById('upload-foot').style.display='flex';
   document.getElementById('rec-foot').style.display='none';
   document.getElementById('rctrls').style.display='none';
   document.getElementById('rec-title-wrap').style.display='block';
-  document.getElementById('rec-title-input').value=file.name.replace(/\.[^.]+$/,'').slice(0,60)||'Įrašas, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('rec-title-input').value=file.name.replace(/\.[^.]+$/,'').slice(0,60)||'Audio, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
   e.target.value='';
 }
 function cancelUpload(){
@@ -910,25 +912,39 @@ function stopWave(){cancelAnimationFrame(af);af=null;Array.from({length:20},(_,i
 
 // ── AUTO TRANSCRIBE ──
 async function autoTranscribe(blob,dur,customTitle){
+  const id=crypto.randomUUID();
+  const now=new Date().toISOString();
+  const inputTitle=customTitle||document.getElementById('rec-title-input').value.trim();
+  const title=inputTitle||'Audio, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  // 1) Save the audio + a placeholder record FIRST — before calling the transcription API.
+  //    This way, if transcription fails for any reason (network hiccup, server error,
+  //    Safari's JSON-parsing quirks, etc.), the recording itself is never lost. The user
+  //    lands on its detail page with a "Konvertuoti į tekstą" button ready to retry.
+  try{
+    await idbSaveBlob(id,blob);
+    const rec={id,title,durationMs:dur,createdAt:now,updatedAt:now,transcript:null,transcriptEn:null,transcriptionStatus:'pending',summaryData:null,actionItems:[],comments:[]};
+    await db.collection('users').doc(user.uid).collection('recordings').doc(id).set(rec);
+  }catch(err){
+    toast('Nepavyko išsaugoti įrašo: '+err.message);
+    goHome();
+    return;
+  }
+  recId=id;lang='lt';
+  loadAudioBlob(blob);
+  // 2) Now attempt transcription. If it fails, the recording still exists — just show
+  //    the error and let the person open it and retry via the "Konvertuoti į tekstą" button.
   try{
     const transcript=await transcribeBlob(blob);
-    const id=crypto.randomUUID();
-    const now=new Date().toISOString();
-    const inputTitle=customTitle||document.getElementById('rec-title-input').value.trim();
-    const title=inputTitle||'Įrašas, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-    await idbSaveBlob(id,blob);
-    const rec={id,title,durationMs:dur,createdAt:now,updatedAt:now,transcript,transcriptEn:null,transcriptionStatus:'completed',summaryData:null,actionItems:[],comments:[]};
-    await db.collection('users').doc(user.uid).collection('recordings').doc(id).set(rec);
-    recId=id;lang='lt';
-    loadAudioBlob(blob);
+    const upd={transcript,transcriptionStatus:'completed',updatedAt:new Date().toISOString()};
+    await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(upd);
     // Generate LT summary first, then EN translation + EN summary in background
     const k=getKey();
     if(k){
       try{
         // Step 1: LT summary (await - user sees this first)
         const ltSd=await generateSummaryData(transcript,'lt');
-        const upd={summaryData:ltSd,updatedAt:new Date().toISOString()};
-        await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(upd);
+        const upd2={summaryData:ltSd,updatedAt:new Date().toISOString()};
+        await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(upd2);
         // Step 2: EN translation + EN summary in background (don't await)
         (async()=>{
           try{
@@ -948,8 +964,10 @@ async function autoTranscribe(blob,dur,customTitle){
         toast('Nepavyko sugeneruoti santraukos: '+e.message);
       }
     }
-    await openDetail(id);
-  }catch(err){toast('Klaida: '+err.message);goHome();}
+  }catch(err){
+    toast('Įrašas išsaugotas, bet konvertavimas į tekstą nepavyko — pabandykite dar kartą įrašo puslapyje.');
+  }
+  await openDetail(id);
 }
 async function translateToEn(transcript,k){
   if(!k)throw new Error('Nėra API rakto');
@@ -1086,7 +1104,7 @@ function renderSummary(rec){
 }
 function renderComments(comments){
   const el=document.getElementById('comment-list');
-  if(!comments.length){el.innerHTML='<div class="comment-empty">No comments yet.</div>';return;}
+  if(!comments.length){el.innerHTML='<div class="comment-empty">Komentarų dar nėra.</div>';return;}
   el.innerHTML=comments.map((c,i)=>`
     <div class="comment">
       <div style="display:flex;align-items:flex-start;gap:8px">
@@ -1186,6 +1204,7 @@ async function getRec(){const s=await db.collection('users').doc(user.uid).colle
 
 let _modalSaveFn=null;
 function openModal(title,text,onSave){
+  document.getElementById('fs-modal-title').textContent=title||'';
   document.getElementById('fs-modal-textarea').value=text||'';
   _modalSaveFn=onSave;
   document.getElementById('fs-modal').classList.add('open');
@@ -1228,11 +1247,13 @@ async function editSummary(){
 }
 async function editTitle(){
   const cur=document.getElementById('d-title-disp').textContent;
-  const t=prompt('Redaguoti pavadinimą:',cur);
-  if(!t||t===cur)return;
-  await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({title:t.trim(),updatedAt:new Date().toISOString()});
-  document.getElementById('d-title-disp').textContent=t.trim();
-  toast('Išsaugota ✓');loadHomeList();
+  openModal('Redaguoti pavadinimą',cur,async(val)=>{
+    const t=(val||'').trim();
+    if(!t||t===cur)return;
+    await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({title:t,updatedAt:new Date().toISOString()});
+    document.getElementById('d-title-disp').textContent=t;
+    toast('Išsaugota ✓');loadHomeList();
+  });
 }
 
 async function toggleAction(i){
@@ -1243,7 +1264,7 @@ async function toggleAction(i){
   renderSummary({...rec,actionItems:items});
 }
 async function addActionItem(){
-  openModal('Naujas veiksmo punktas','',async(val)=>{
+  openModal('Nauja užduotis','',async(val)=>{
     if(!val.trim())return;
     const rec=await getRec();if(!rec)return;
     const items=[...(rec.actionItems||[]),{text:val.trim(),done:false,createdAt:new Date().toISOString()}];
@@ -1252,7 +1273,7 @@ async function addActionItem(){
   });
 }
 async function deleteActionItem(i){
-  if(!confirm('Ištrinti šį veiksmo punktą?'))return;
+  if(!confirm('Ištrinti šią užduotį?'))return;
   const rec=await getRec();if(!rec)return;
   const items=[...(rec.actionItems||[])];
   items.splice(i,1);
@@ -1263,7 +1284,7 @@ async function deleteActionItem(i){
 async function editActionItem(i){
   const rec=await getRec();if(!rec)return;
   const current=(rec.actionItems||[])[i]?.text||'';
-  openModal('Redaguoti veiksmo punktą',current,async(val)=>{
+  openModal('Redaguoti užduotį',current,async(val)=>{
     if(!val.trim()||val.trim()===current)return;
     const rec2=await getRec();if(!rec2)return;
     const items=[...(rec2.actionItems||[])];
@@ -1458,28 +1479,28 @@ async function transcribeBlob(blob){
           body:JSON.stringify({audio:b64,mimeType:mtype})
         });
         const d=await r.json();
-        if(!r.ok)throw new Error(d.error||'Transkripcijos klaida');
-        if(!d.text)throw new Error('Tuščia transkripcija');
+        if(!r.ok)throw new Error(d.error||'Klaida konvertuojant į tekstą');
+        if(!d.text)throw new Error('Tuščias tekstas');
         ok(d.text);
       }catch(err){fail(err);}
     };
-    fr.onerror=()=>fail(new Error('Could not read audio'));
+    fr.onerror=()=>fail(new Error('Nepavyko nuskaityti garso įrašo'));
     fr.readAsDataURL(blob);
   });
 }
 async function doTranscribe(){
   const btn=document.getElementById('btn-tr');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Transkribuojama…';
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Konvertuojama į tekstą…';
   try{
     const rec=await getRec();if(!rec)return;
     const blob=await idbGetBlob(recId);
-    if(!blob){toast('Audio not found locally.');return;}
+    if(!blob){toast('Garso įrašo nėra šiame įrenginyje.');return;}
     const transcript=await transcribeBlob(blob);
     const upd=lang==='lt'?{transcript,transcriptionStatus:'completed',updatedAt:new Date().toISOString()}:{transcriptEn:transcript,updatedAt:new Date().toISOString()};
     await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update(upd);
-    renderDetail({...rec,...upd});toast('Transkripcija baigta ✓');
+    renderDetail({...rec,...upd});toast('Tekstas paruoštas ✓');
   }catch(e){toast('Klaida: '+e.message);}
-  finally{btn.disabled=false;btn.textContent='Transkribuoti iš naujo';}
+  finally{btn.disabled=false;btn.textContent='Konvertuoti iš naujo';}
 }
 async function generateSummaryData(transcript,l){
   const k=getKey();
@@ -1497,7 +1518,7 @@ async function doSummarize(){
   // kept for manual retry via edit summary flow
   const rec=await getRec();if(!rec)return;
   const tr=lang==='lt'?rec.transcript:rec.transcriptEn;
-  if(!tr){toast('Pirmiausia transkribuokite.');return;}
+  if(!tr){toast('Pirmiausia konvertuokite į tekstą.');return;}
   try{
     const sd=await generateSummaryData(tr,lang);
     const upd=lang==='lt'?{summaryData:sd,updatedAt:new Date().toISOString()}:{summaryDataEn:sd,updatedAt:new Date().toISOString()};

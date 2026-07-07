@@ -1,7 +1,7 @@
 {
   "name": "miJuli",
   "short_name": "miJuli",
-  "description": "Klausyk. Transkribuok. Apibendrink.",
+  "description": "Kiekviena mintis verta būti išsaugota.",
   "start_url": "/mijuli-app/",
   "scope": "/mijuli-app/",
   "display": "standalone",
