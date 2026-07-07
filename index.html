@@ -1367,8 +1367,15 @@ async function copyTranscript(){
 }
 async function deleteRec(){
   if(!confirm('Ištrinti šį įrašą negrįžtamai?'))return;
+  const idToDelete=recId;
+  let audioPath=null;
+  try{const s=await db.collection('users').doc(user.uid).collection('recordings').doc(idToDelete).get();if(s.exists)audioPath=s.data().audioPath;}catch(e){}
   unloadAudio();
-  await db.collection('users').doc(user.uid).collection('recordings').doc(recId).delete();
+  await db.collection('users').doc(user.uid).collection('recordings').doc(idToDelete).delete();
+  idbDeleteBlob(idToDelete).catch(e=>console.warn('IndexedDB blob delete failed:',e));
+  if(audioPath){
+    storage.ref(audioPath).delete().catch(e=>console.warn('Storage blob delete failed:',e));
+  }
   toast('Ištrinta.');goHome();
 }
 
@@ -1595,6 +1602,13 @@ async function idbGetBlob(id){
   return new Promise((ok,fail)=>{
     const r=d.transaction(AUDIO_STORE,'readonly').objectStore(AUDIO_STORE).get(id);
     r.onsuccess=()=>ok(r.result?.blob||null);r.onerror=fail;
+  });
+}
+async function idbDeleteBlob(id){
+  const d=await getAudioDb();
+  return new Promise((ok,fail)=>{
+    const r=d.transaction(AUDIO_STORE,'readwrite').objectStore(AUDIO_STORE).delete(id);
+    r.onsuccess=ok;r.onerror=fail;
   });
 }
 function loadAudioBlob(blob){
