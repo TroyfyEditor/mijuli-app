@@ -514,12 +514,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
       <div class="acc-row"><span class="acc-row-l">El. paštas</span><span class="acc-row-v" id="s-email">–</span></div>
     </div>
     <div class="acc-sec">
-      <div class="acc-lbl">OpenAI API raktas</div>
-      <input class="acc-input" type="password" id="s-key" placeholder="sk-..."/>
-
-      <button class="acc-save-btn" onclick="saveKey()">Išsaugoti raktą</button>
-    </div>
-    <div class="acc-sec">
       <button class="btn-del" onclick="doSignOut()">Atsijungti</button>
     </div>
   </div>
@@ -650,8 +644,6 @@ function navTo(tab){
   else if(tab==='account'){
     document.getElementById('s-nick').textContent=nick;
     document.getElementById('s-email').textContent=user?.email||'–';
-    const k=localStorage.getItem('mj_key')||sessionStorage.getItem('mj_key')||'';
-    document.getElementById('s-key').value=k;
     show('p-account');
   }
   setNavActive(tab);
@@ -660,14 +652,6 @@ function setNavActive(tab){
   document.getElementById('nav-home').className='nav-btn'+(tab==='home'?' on':'');
   document.getElementById('nav-account').className='nav-btn'+(tab==='account'?' on':'');
 }
-
-// ── API KEY ──
-function saveKey(){
-  const v=document.getElementById('s-key').value.trim();
-  localStorage.setItem('mj_key',v);
-  toast('API key saved ✓');
-}
-function getKey(){return localStorage.getItem('mj_key')||'';}
 
 // ── HOME LIST ──
 async function loadHomeList(){
@@ -943,50 +927,43 @@ async function autoTranscribe(blob,dur,customTitle){
     const upd={transcript,transcriptionStatus:'completed',updatedAt:new Date().toISOString()};
     await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(upd);
     // Generate LT summary first, then EN translation + EN summary in background
-    const k=getKey();
-    if(k){
-      try{
-        // Step 1: LT summary (await - user sees this first)
-        const ltSd=await generateSummaryData(transcript,'lt');
-        const upd2={summaryData:ltSd,updatedAt:new Date().toISOString()};
-        await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(upd2);
-        // Step 2: EN translation + EN summary in background (don't await)
-        (async()=>{
-          try{
-            const enText=await translateToEn(transcript,k);
-            if(enText){
-              const enUpd={transcriptEn:enText,updatedAt:new Date().toISOString()};
-              try{
-                const enSd=await generateSummaryData(enText,'en');
-                enUpd.summaryDataEn=enSd;
-              }catch(e){console.warn('EN summary failed:',e);}
-              await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(enUpd);
-            }
-          }catch(e){console.warn('EN translation failed:',e);}
-        })();
-      }catch(e){
-        console.warn('LT summary failed:',e);
-        toast('Nepavyko sugeneruoti santraukos: '+e.message);
-      }
+    try{
+      // Step 1: LT summary (await - user sees this first)
+      const ltSd=await generateSummaryData(transcript,'lt');
+      const upd2={summaryData:ltSd,updatedAt:new Date().toISOString()};
+      await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(upd2);
+      // Step 2: EN translation + EN summary in background (don't await)
+      (async()=>{
+        try{
+          const enText=await translateToEn(transcript);
+          if(enText){
+            const enUpd={transcriptEn:enText,updatedAt:new Date().toISOString()};
+            try{
+              const enSd=await generateSummaryData(enText,'en');
+              enUpd.summaryDataEn=enSd;
+            }catch(e){console.warn('EN summary failed:',e);}
+            await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(enUpd);
+          }
+        }catch(e){console.warn('EN translation failed:',e);}
+      })();
+    }catch(e){
+      console.warn('LT summary failed:',e);
+      toast('Nepavyko sugeneruoti santraukos: '+e.message);
     }
   }catch(err){
     toast('Įrašas išsaugotas, bet konvertavimas nepavyko. Bandykite dar kartą.');
   }
   await openDetail(id);
 }
-async function translateToEn(transcript,k){
-  if(!k)throw new Error('Nėra API rakto');
-  const r=await fetch('https://api.openai.com/v1/chat/completions',{
+async function translateToEn(transcript){
+  const r=await fetch('https://julija.app.n8n.cloud/webhook/e728594c-8e6e-4d06-b0ee-6fc39213347f',{
     method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},
-    body:JSON.stringify({model:'gpt-4o',max_tokens:3000,messages:[
-      {role:'system',content:'Translate the following Lithuanian transcript to English. Keep names, brands and technical terms as-is. Return only the translated text, no comments.'},
-      {role:'user',content:transcript}
-    ]})
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({transcript})
   });
   const d=await r.json();
-  if(!r.ok)throw new Error(d.error?.message||'Vertimo klaida');
-  const txt=d.choices?.[0]?.message?.content?.trim()||'';
+  if(!r.ok||d.error)throw new Error(d.error||'Vertimo klaida');
+  const txt=(d.text||'').trim();
   if(!txt)throw new Error('Tuščias vertimas');
   return txt;
 }
@@ -1178,36 +1155,33 @@ async function setLang(l){
   if(!s.exists)return;
   const rec=s.data();
   if(l==='en'){
-    const k=getKey();
-    if(k){
-      // Translate if needed
-      if(!rec.transcriptEn&&rec.transcript){
-        document.getElementById('d-tr').className='tr-empty';
-        document.getElementById('d-tr').textContent='Verčiama…';
-        try{
-          const translated=await translateToEn(rec.transcript,k);
-          if(translated){
-            await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({transcriptEn:translated,updatedAt:new Date().toISOString()});
-            rec.transcriptEn=translated;
-          }
-        }catch(e){toast('Vertimo klaida: '+e.message);}
-      }
-      // Auto-generate EN summary if not yet
-      if(!rec.summaryDataEn&&rec.transcriptEn){
-        // Render with a flag that hides generate button
-        rec._generatingSummary=true;
-        renderDetail(rec);
-        delete rec._generatingSummary;
-        try{
-          // Show generating state
-          const ov=document.getElementById('sum-overview');
-          if(ov){ov.className='sum-empty';ov.textContent='Generuojama santrauka…';}
-          const sd=await generateSummaryData(rec.transcriptEn,'en');
-          const upd={summaryDataEn:sd,updatedAt:new Date().toISOString()};
-          await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update(upd);
-          rec.summaryDataEn=sd;
-        }catch(e){console.warn('EN summary failed:',e.message);}
-      }
+    // Translate if needed
+    if(!rec.transcriptEn&&rec.transcript){
+      document.getElementById('d-tr').className='tr-empty';
+      document.getElementById('d-tr').textContent='Verčiama…';
+      try{
+        const translated=await translateToEn(rec.transcript);
+        if(translated){
+          await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update({transcriptEn:translated,updatedAt:new Date().toISOString()});
+          rec.transcriptEn=translated;
+        }
+      }catch(e){toast('Vertimo klaida: '+e.message);}
+    }
+    // Auto-generate EN summary if not yet
+    if(!rec.summaryDataEn&&rec.transcriptEn){
+      // Render with a flag that hides generate button
+      rec._generatingSummary=true;
+      renderDetail(rec);
+      delete rec._generatingSummary;
+      try{
+        // Show generating state
+        const ov=document.getElementById('sum-overview');
+        if(ov){ov.className='sum-empty';ov.textContent='Generuojama santrauka…';}
+        const sd=await generateSummaryData(rec.transcriptEn,'en');
+        const upd={summaryDataEn:sd,updatedAt:new Date().toISOString()};
+        await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update(upd);
+        rec.summaryDataEn=sd;
+      }catch(e){console.warn('EN summary failed:',e.message);}
     }
   }
   renderDetail(rec);
@@ -1484,8 +1458,6 @@ async function addBookmark(){
 
 // ── API ──
 async function transcribeBlob(blob){
-  const k=getKey();
-  if(!k)throw new Error('Pridėkite savo OpenAI API raktą Paskyros nustatymuose.');
   return new Promise((ok,fail)=>{
     const fr=new FileReader();
     fr.onload=async e=>{
@@ -1523,16 +1495,15 @@ async function doTranscribe(){
   finally{btn.disabled=false;btn.textContent='Konvertuoti iš naujo';}
 }
 async function generateSummaryData(transcript,l){
-  const k=getKey();
-  if(!k)throw new Error('Pridėkite savo OpenAI API raktą Paskyros nustatymuose.');
-  const sysLT=`Tu esi tikslus asmeninio užrašų asistentas. Grąžink JSON objektą su šiais laukais:\n{"overview":"trumpas 2-4 sakinių aprašymas","outline":[{"title":"Sekcijos pavadinimas","time":"0:00","bullets":["punktas1","punktas2"]}]}\nTik JSON, be jokių komentarų ar markdown.`;
-  const sysEN=`You are a precise personal notes assistant. Return a JSON object with these fields:\n{"overview":"short 2-4 sentence summary","outline":[{"title":"Section title","time":"0:00","bullets":["point1","point2"]}]}\nOnly JSON, no comments or markdown.`;
-  const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'gpt-4o',max_tokens:1500,messages:[{role:'system',content:l==='lt'?sysLT:sysEN},{role:'user',content:transcript}]})});
+  const r=await fetch('https://julija.app.n8n.cloud/webhook/42875f8b-1a9c-41bb-bdec-f91968a8b781',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({transcript,lang:l})
+  });
   const d=await r.json();
-  if(!r.ok)throw new Error(d.error?.message||'Santraukos klaida');
-  let raw=d.choices?.[0]?.message?.content?.trim()||'';
-  raw=raw.replace(/```json|```/g,'').trim();
-  return JSON.parse(raw);
+  if(!r.ok||d.error)throw new Error(d.error||'Santraukos klaida');
+  if(!d.summary)throw new Error('Tuščia santrauka');
+  return d.summary;
 }
 async function doSummarize(){
   // kept for manual retry via edit summary flow
