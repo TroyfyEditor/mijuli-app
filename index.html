@@ -13,6 +13,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <style>
 :root{
   --bg:#000;
@@ -564,7 +565,7 @@ firebase.initializeApp({
   messagingSenderId:"816788640557",
   appId:"1:816788640567:web:4607af34b1e4499426c0b2"
 });
-const auth=firebase.auth(),db=firebase.firestore();
+const auth=firebase.auth(),db=firebase.firestore(),storage=firebase.storage();
 
 let user=null,nick='',recId=null,lang='lt';
 let mr=null,ms=null,chunks=[],tick=null,rms=0,rstate='idle';
@@ -924,6 +925,10 @@ async function autoTranscribe(blob,dur,customTitle){
     await idbSaveBlob(id,blob);
     const rec={id,title,durationMs:dur,createdAt:now,updatedAt:now,transcript:null,transcriptEn:null,transcriptionStatus:'pending',summaryData:null,actionItems:[],comments:[]};
     await db.collection('users').doc(user.uid).collection('recordings').doc(id).set(rec);
+    // Upload the audio to Firebase Storage in the background (don't block the UI on this).
+    // If it fails (offline, quota, etc.) the recording still works fine locally — we just
+    // won't have a cloud backup / cross-device copy for this one until it's retried.
+    uploadAudioToStorage(id,blob);
   }catch(err){
     toast('Nepavyko išsaugoti įrašo: '+err.message);
     goHome();
@@ -1011,20 +1016,27 @@ async function openDetail(id){
     document.getElementById('sum-outline').textContent='';
     document.getElementById('comment-list').innerHTML='';
   }
-  // Load audio immediately from IndexedDB (no wait)
-  idbGetBlob(id).then(blob=>{
+  // Fetch fresh data from Firestore (also used below for the cloud-audio fallback)
+  const recPromise=db.collection('users').doc(user.uid).collection('recordings').doc(id).get();
+  // Load audio: try IndexedDB first (instant), then fall back to Firebase Storage
+  // (covers recordings opened on a different device, or after clearing local data).
+  (async()=>{
+    let blob=await idbGetBlob(id).catch(()=>null);
+    if(!blob){
+      let audioPath=cached?.audioPath;
+      if(!audioPath){
+        try{const s=await recPromise;audioPath=s.exists?s.data().audioPath:null;}catch(e){}
+      }
+      blob=await downloadAudioFromStorage(id,audioPath);
+    }
     if(recId!==id)return;
     if(blob){
       loadAudioBlob(blob);
     }else{
-      // Audio not in local storage (old recording or different device)
       document.getElementById('p-time').textContent='Garso įrašo nėra šiame įrenginyje';
     }
-  }).catch(()=>{
-    document.getElementById('p-time').textContent='Garso įrašas nepasiekiamas';
-  });
-  // Fetch fresh data from Firestore in background
-  db.collection('users').doc(user.uid).collection('recordings').doc(id).get().then(s=>{
+  })();
+  recPromise.then(s=>{
     if(recId!==id)return;
     if(!s.exists){toast('Nerasta.');goHome();return;}
     const rec=s.data();
@@ -1493,7 +1505,8 @@ async function doTranscribe(){
   btn.disabled=true;btn.innerHTML='<span class="spin"></span>Konvertuojama į tekstą…';
   try{
     const rec=await getRec();if(!rec)return;
-    const blob=await idbGetBlob(recId);
+    let blob=await idbGetBlob(recId).catch(()=>null);
+    if(!blob)blob=await downloadAudioFromStorage(recId,rec.audioPath);
     if(!blob){toast('Garso įrašo nėra šiame įrenginyje.');return;}
     const transcript=await transcribeBlob(blob);
     const upd=lang==='lt'?{transcript,transcriptionStatus:'completed',updatedAt:new Date().toISOString()}:{transcriptEn:transcript,updatedAt:new Date().toISOString()};
@@ -1537,6 +1550,38 @@ async function getAudioDb(){
     r.onsuccess=e=>ok(e.target.result);
     r.onerror=fail;
   });
+}
+// ── CLOUD AUDIO (Firebase Storage) ──
+function audioExtFor(mimeType){
+  const t=(mimeType||'').split(';')[0].trim();
+  if(t.includes('mp4')||t.includes('m4a'))return 'm4a';
+  if(t.includes('wav'))return 'wav';
+  if(t.includes('mpeg'))return 'mp3';
+  if(t.includes('ogg'))return 'ogg';
+  return 'webm';
+}
+async function uploadAudioToStorage(id,blob){
+  try{
+    const ext=audioExtFor(blob.type);
+    const path=`recordings/${user.uid}/${id}.${ext}`;
+    await storage.ref(path).put(blob,{contentType:blob.type||'application/octet-stream'});
+    await db.collection('users').doc(user.uid).collection('recordings').doc(id).update({audioPath:path,audioUploadedAt:new Date().toISOString()});
+  }catch(e){
+    console.warn('Audio upload to Storage failed:',e);
+  }
+}
+async function downloadAudioFromStorage(id,audioPath){
+  if(!audioPath)return null;
+  try{
+    const url=await storage.ref(audioPath).getDownloadURL();
+    const resp=await fetch(url);
+    const blob=await resp.blob();
+    idbSaveBlob(id,blob).catch(()=>{}); // cache locally for next time, best-effort
+    return blob;
+  }catch(e){
+    console.warn('Cloud audio download failed:',e);
+    return null;
+  }
 }
 async function idbSaveBlob(id,blob){
   const d=await getAudioDb();
