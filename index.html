@@ -51,6 +51,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .afield input:focus{border-color:var(--blue)}
 .auth-err{font-size:13px;color:var(--red);min-height:18px;margin-bottom:10px;text-align:center}
 .btn-auth{width:100%;background:var(--blue);border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:600;color:#fff;cursor:pointer;font-family:inherit}
+.btn-google{width:100%;background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;font-size:15px;font-weight:600;color:#1f1f1f;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:18px}
+.btn-google:active{opacity:.85}
+.auth-divider{display:flex;align-items:center;gap:12px;margin-bottom:18px;color:var(--muted);font-size:13px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.btn-forgot{width:100%;background:transparent;border:none;padding:10px;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;text-decoration:underline}
 .btn-auth:active{opacity:.7}
 .btn-auth:disabled{opacity:.4}
 
@@ -280,11 +285,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
       <button class="atab on" id="atab-in" onclick="switchAuth('login')">Prisijungti</button>
       <button class="atab" id="atab-up" onclick="switchAuth('register')">Registruotis</button>
     </div>
+    <button class="btn-google" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.83.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.03l2.99-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.97l2.99 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
+      Tęsti su Google
+    </button>
+    <div class="auth-divider"><span>arba</span></div>
     <div class="afield"><label>Slapyvardis</label><input type="text" id="a-nick" placeholder="" autocomplete="username"/></div>
     <div class="afield" id="a-email-wrap" style="display:none"><label>El. paštas</label><input type="email" id="a-email" placeholder=""/></div>
     <div class="afield"><label>Slaptažodis</label><input type="password" id="a-pass" placeholder="••••••••"/></div>
     <div class="auth-err" id="a-err"></div>
     <button class="btn-auth" id="btn-auth-do" onclick="doAuth()">Prisijungti</button>
+    <button class="btn-forgot" onclick="doForgotPassword()">Pamiršau slaptažodį</button>
   </div>
 </div>
 
@@ -571,8 +582,22 @@ let allRecs=[];
 auth.onAuthStateChanged(async u=>{
   if(u){
     user=u;
-    const s=await db.collection('users').doc(u.uid).get();
-    nick=s.exists?s.data().nickname:u.email.split('@')[0];
+    let s=await db.collection('users').doc(u.uid).get();
+    if(!s.exists){
+      // First-ever sign-in (e.g. via Google) — no profile doc yet, create one.
+      // Auto-generate a nickname from the Google display name / email; the person
+      // can change it later in Account settings.
+      const base=(u.displayName||u.email.split('@')[0]||'naudotojas').toLowerCase().replace(/[^a-z0-9]+/g,'');
+      let autoNick=base||'naudotojas';
+      // Avoid nickname collisions
+      try{
+        const clash=await db.collection('users').where('nickname','==',autoNick).limit(1).get();
+        if(!clash.empty)autoNick=autoNick+Math.floor(Math.random()*1000);
+      }catch(e){}
+      await db.collection('users').doc(u.uid).set({nickname:autoNick,email:u.email,createdAt:new Date().toISOString()});
+      s=await db.collection('users').doc(u.uid).get();
+    }
+    nick=s.data().nickname;
     afterLogin();
   }else{
     user=null;
@@ -581,6 +606,27 @@ auth.onAuthStateChanged(async u=>{
     document.getElementById('bottom-nav').style.display='none';
   }
 });
+// Surface any error from a Google sign-in redirect (e.g. account-exists-with-different-credential)
+auth.getRedirectResult().catch(e=>{
+  setErr(e.message.replace('Firebase: ','').replace(/\(auth[^)]*\)/,'').trim());
+});
+async function signInWithGoogle(){
+  const provider=new firebase.auth.GoogleAuthProvider();
+  auth.signInWithRedirect(provider);
+}
+async function doForgotPassword(){
+  const n=document.getElementById('a-nick').value.trim();
+  if(!n){setErr('Įvesk slapyvardį, tada spausk "Pamiršau slaptažodį".');return;}
+  try{
+    const q=await db.collection('users').where('nickname','==',n).limit(1).get();
+    if(q.empty){setErr('Slapyvardis nerastas.');return;}
+    await auth.sendPasswordResetEmail(q.docs[0].data().email);
+    setErr('');
+    toast('Slaptažodžio atkūrimo laiškas išsiųstas ✓');
+  }catch(e){
+    setErr(e.message.replace('Firebase: ','').replace(/\(auth[^)]*\)/,'').trim());
+  }
+}
 
 let amode='login';
 function switchAuth(m){
@@ -589,6 +635,7 @@ function switchAuth(m){
   document.getElementById('atab-up').className='atab'+(m==='register'?' on':'');
   document.getElementById('a-email-wrap').style.display=m==='register'?'block':'none';
   document.getElementById('btn-auth-do').textContent=m==='login'?'Prisijungti':'Sukurti paskyrą';
+  document.querySelector('.btn-forgot').style.display=m==='login'?'block':'none';
   document.getElementById('a-err').textContent='';
 }
 async function doAuth(){
