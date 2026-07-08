@@ -917,7 +917,7 @@ async function autoTranscribe(blob,dur,customTitle){
   //    lands on its detail page with a "Konvertuoti į tekstą" button ready to retry.
   try{
     await idbSaveBlob(id,blob);
-    const rec={id,title,durationMs:dur,createdAt:now,updatedAt:now,transcript:null,transcriptEn:null,transcriptionStatus:'pending',summaryData:null,actionItems:[],comments:[]};
+    const rec={id,title,durationMs:dur,createdAt:now,updatedAt:now,transcript:null,transcriptEn:null,transcriptionStatus:'pending',summaryData:null,actionItems:[],comments:[],highlights:[]};
     await db.collection('users').doc(user.uid).collection('recordings').doc(id).set(rec);
     // Upload the audio to Firebase Storage in the background (don't block the UI on this).
     // If it fails (offline, quota, etc.) the recording still works fine locally — we just
@@ -1045,6 +1045,8 @@ function renderDetail(rec){
     tc.className='tr-text';
     tc.textContent=tr;
     delete tc.dataset.wrapped;
+    // Load saved highlights for this recording from Firestore into memory
+    highlightedWords[recId]=new Set(rec.highlights||[]);
     // Always wrap if there are saved highlights for this recording
     const saved=highlightedWords[recId];
     if(saved&&saved.size>0){
@@ -1399,6 +1401,12 @@ function skipBack(){if(ael)ael.currentTime=Math.max(0,ael.currentTime-5);}
 function skipFwd(){if(ael)ael.currentTime=Math.min(ael.duration||0,ael.currentTime+5);}
 let highlightMode=false;
 const highlightedWords={}; // recId -> Set of word indices
+async function saveHighlights(rId){
+  try{
+    const arr=Array.from(highlightedWords[rId]||[]);
+    await db.collection('users').doc(user.uid).collection('recordings').doc(rId).update({highlights:arr,updatedAt:new Date().toISOString()});
+  }catch(e){console.warn('Saving highlights failed:',e);}
+}
 
 function toggleHighlight(){
   highlightMode=!highlightMode;
@@ -1418,7 +1426,8 @@ function wrapTranscriptWords(el){
   if(!text.trim())return;
   const parts=text.split(/(\s+)/);
   el.innerHTML='';
-  const saved=highlightedWords[recId]||new Set();
+  const rId=recId; // capture current recording id for this render
+  const saved=highlightedWords[rId]||new Set();
   let idx=0;
   parts.forEach(part=>{
     if(part.trim()){
@@ -1432,12 +1441,13 @@ function wrapTranscriptWords(el){
         if(!highlightMode)return;
         this.classList.toggle('hl');
         // Save highlight state
-        if(!highlightedWords[recId])highlightedWords[recId]=new Set();
+        if(!highlightedWords[rId])highlightedWords[rId]=new Set();
         if(this.classList.contains('hl')){
-          highlightedWords[recId].add(wordIdx);
+          highlightedWords[rId].add(wordIdx);
         }else{
-          highlightedWords[recId].delete(wordIdx);
+          highlightedWords[rId].delete(wordIdx);
         }
+        saveHighlights(rId);
       });
       el.appendChild(span);
     }else{
