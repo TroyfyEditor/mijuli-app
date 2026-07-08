@@ -896,6 +896,16 @@ function startWave(){
 function stopWave(){cancelAnimationFrame(af);af=null;Array.from({length:20},(_,i)=>document.getElementById('b'+(i+1))).forEach(b=>{if(b){b.style.height='5px';b.style.opacity='.3';}});}
 
 // ── AUTO TRANSCRIBE ──
+// ── USAGE TRACKING (for cost visibility, no limits enforced yet) ──
+async function trackUsage(minutesDelta,summariesDelta){
+  try{
+    const monthKey=new Date().toISOString().slice(0,7); // e.g. '2026-07'
+    const upd={};
+    if(minutesDelta)upd[`usage.${monthKey}.minutes`]=firebase.firestore.FieldValue.increment(minutesDelta);
+    if(summariesDelta)upd[`usage.${monthKey}.summaries`]=firebase.firestore.FieldValue.increment(summariesDelta);
+    if(Object.keys(upd).length)await db.collection('users').doc(user.uid).update(upd);
+  }catch(e){console.warn('Usage tracking failed:',e);}
+}
 async function autoTranscribe(blob,dur,customTitle){
   const id=crypto.randomUUID();
   const now=new Date().toISOString();
@@ -926,6 +936,7 @@ async function autoTranscribe(blob,dur,customTitle){
     const transcript=await transcribeBlob(blob);
     const upd={transcript,transcriptionStatus:'completed',updatedAt:new Date().toISOString()};
     await db.collection('users').doc(user.uid).collection('recordings').doc(id).update(upd);
+    trackUsage(dur/60000,0);
     // Generate LT summary first, then EN translation + EN summary in background
     try{
       // Step 1: LT summary (await - user sees this first)
@@ -1490,6 +1501,7 @@ async function doTranscribe(){
     const transcript=await transcribeBlob(blob);
     const upd=lang==='lt'?{transcript,transcriptionStatus:'completed',updatedAt:new Date().toISOString()}:{transcriptEn:transcript,updatedAt:new Date().toISOString()};
     await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update(upd);
+    trackUsage((rec.durationMs||0)/60000,0);
     renderDetail({...rec,...upd});toast('Tekstas paruoštas ✓');
   }catch(e){toast('Klaida: '+e.message);}
   finally{btn.disabled=false;btn.textContent='Konvertuoti iš naujo';}
@@ -1503,6 +1515,7 @@ async function generateSummaryData(transcript,l){
   const d=await r.json();
   if(!r.ok||d.error)throw new Error(d.error||'Santraukos klaida');
   if(!d.summary)throw new Error('Tuščia santrauka');
+  trackUsage(0,1);
   return d.summary;
 }
 async function doSummarize(){
