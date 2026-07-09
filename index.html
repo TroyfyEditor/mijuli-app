@@ -580,6 +580,7 @@ let allRecs=[];
 
 // ── AUTH ──
 auth.onAuthStateChanged(async u=>{
+  console.log('onAuthStateChanged fired, user:',u);
   if(u){
     user=u;
     let s=await db.collection('users').doc(u.uid).get();
@@ -607,12 +608,24 @@ auth.onAuthStateChanged(async u=>{
   }
 });
 // Surface any error from a Google sign-in redirect (e.g. account-exists-with-different-credential)
-auth.getRedirectResult().catch(e=>{
+auth.getRedirectResult().then(result=>{
+  console.log('getRedirectResult SUCCESS:',result);
+}).catch(e=>{
+  console.error('getRedirectResult ERROR:',e);
   setErr(e.message.replace('Firebase: ','').replace(/\(auth[^)]*\)/,'').trim());
 });
 async function signInWithGoogle(){
   const provider=new firebase.auth.GoogleAuthProvider();
-  auth.signInWithRedirect(provider);
+  try{
+    await auth.signInWithPopup(provider);
+  }catch(e){
+    if(e.code==='auth/popup-blocked'||e.code==='auth/cancelled-popup-request'){
+      // Fallback for browsers/contexts where popups don't work (e.g. installed PWA)
+      auth.signInWithRedirect(provider);
+      return;
+    }
+    setErr(e.message.replace('Firebase: ','').replace(/\(auth[^)]*\)/,'').trim());
+  }
 }
 async function doForgotPassword(){
   const n=document.getElementById('a-nick').value.trim();
