@@ -584,7 +584,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
       <div class="acc-row acc-row-tap" onclick="openTrash()">
         <span class="acc-row-l acc-row-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m5 0V4a2 2 0 012-2h0a2 2 0 012 2v2"/></svg>
-          Šiukšlinė
+          Šiukšliadėžė
         </span>
         <span class="acc-row-v">›</span>
       </div>
@@ -824,14 +824,14 @@ function openPrivacyPolicy(){
     <p>El. paštas, slapyvardis, garso įrašai (saugomi jūsų įrenginyje ir Firebase Storage debesyje), transkriptai, santraukos, komentarai ir užduotys (saugomi Firebase Firestore debesyje).</p>
     <h3>Kam naudojame</h3>
     <p>Tik appso funkcijoms teikti — įrašymui, konvertavimui į tekstą, santraukoms. Duomenų neparduodame ir neperduodame trečiosioms šalims, išskyrus paslaugas, būtinas appso veikimui (Firebase, n8n, OpenAI).</p>
-    <h3>Šiukšlinė</h3>
-    <p>Ištrinti įrašai 7 dienas laikomi šiukšlinėje ir gali būti atkurti. Po 7 dienų jie ištrinami visam laikui.</p>
+    <h3>Šiukšliadėžė</h3>
+    <p>Ištrinti įrašai 7 dienas laikomi šiukšliadėžėje ir gali būti atkurti. Po 7 dienų jie ištrinami visam laikui.</p>
     <h3>Jūsų teisės</h3>
     <p>Turite teisę susipažinti, ištaisyti, ištrinti savo duomenis, ar pateikti skundą Valstybinei duomenų apsaugos inspekcijai (vdai.lrv.lt). Dėl klausimų rašykite troyfyshop@gmail.com</p>
   `);
 }
 async function openTrash(){
-  openInfoOverlay('Šiukšlinė','<div class="trash-loading">Kraunama…</div>');
+  openInfoOverlay('Šiukšliadėžė','<div class="trash-loading">Kraunama…</div>');
   const snap=await db.collection('users').doc(user.uid).collection('recordings').get();
   const now=Date.now();
   const keep=[];
@@ -847,7 +847,7 @@ async function openTrash(){
   }
   const body=document.getElementById('info-overlay-body');
   if(!body||!document.getElementById('info-overlay').classList.contains('open'))return;
-  if(!keep.length){body.innerHTML='<div class="trash-empty">Šiukšlinė tuščia.</div>';return;}
+  if(!keep.length){body.innerHTML='<div class="trash-empty">Šiukšliadėžė tuščia.</div>';return;}
   keep.sort((a,b)=>new Date(b.deletedAt)-new Date(a.deletedAt));
   body.innerHTML=keep.map(r=>`
     <div class="trash-item">
@@ -858,8 +858,7 @@ async function openTrash(){
   `).join('');
 }
 async function deleteAccount(){
-  if(!confirm('Ištrinti paskyrą VISAM LAIKUI? Bus ištrinti visi įrašai, tekstai ir garso failai. Šio veiksmo atšaukti negalima.'))return;
-  if(!confirm('Ar tikrai? Tai paskutinis patvirtinimas — paskyros atkurti nebus galima.'))return;
+  if(!confirm('Paspaudus "OK" mygtuką, jūsų paskyra ir visi joje esantys įrašai bus ištrinti visam laikui. Šio veiksmo atšaukti nebus galima. Jei sutinkate tęsti, spauskite "OK".'))return;
   try{
     const snap=await db.collection('users').doc(user.uid).collection('recordings').get();
     for(const d of snap.docs){
@@ -1610,11 +1609,11 @@ async function copyTranscript(){
   await copyText(t);
 }
 async function deleteRec(){
-  if(!confirm('Perkelti šį įrašą į šiukšlinę? Galėsi jį atkurti 7 dienas.'))return;
+  if(!confirm('Jūsų įrašas bus perkeltas į šiukšliadėžę, kur galėsite jį atkurti dar 7 dienas.'))return;
   const idToDelete=recId;
   unloadAudio();
   await db.collection('users').doc(user.uid).collection('recordings').doc(idToDelete).update({deletedAt:new Date().toISOString()});
-  toast('Perkelta į šiukšlinę.');goHome();
+  toast('Perkelta į šiukšliadėžę.');goHome();
 }
 async function purgeRecording(id,audioPath){
   try{
