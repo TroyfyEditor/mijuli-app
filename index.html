@@ -616,6 +616,7 @@ auth.getRedirectResult().then(result=>{
 });
 async function signInWithGoogle(){
   const provider=new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:'select_account'});
   try{
     await auth.signInWithPopup(provider);
   }catch(e){
