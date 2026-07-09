@@ -28,6 +28,19 @@
   --blue-border:rgba(166,166,158,.3);
   --red:#ef4444;
 }
+html.light{
+  --bg:#ffffff;
+  --surface:#f7f7f6;
+  --surface2:#efefed;
+  --surface3:#e4e4e1;
+  --border:#dedeDA;
+  --white:#181818;
+  --muted:#6b6b64;
+  --blue:#6b6b64;
+  --blue-dim:rgba(107,107,100,.10);
+  --blue-border:rgba(107,107,100,.3);
+  --red:#d92d2d;
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);overflow:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;color:var(--white)}
@@ -241,6 +254,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .acc-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
 .acc-row-l{font-size:15px}
 .acc-row-v{font-size:13px;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-row-tap{cursor:pointer}
+.acc-row-tap:active{opacity:.6}
+.acc-row-icon{display:flex;align-items:center;gap:10px}
+.acc-avatar-wrap{display:flex;justify-content:center;margin:4px 0 20px}
+.acc-avatar{width:64px;height:64px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--white)}
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.switch-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--surface3);border-radius:26px;transition:.2s}
+.switch-slider::before{content:'';position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.switch input:checked+.switch-slider{background:#7a7a72}
+.switch input:checked+.switch-slider::before{transform:translateX(20px)}
+.btn-danger{color:#ff5c5c}
+.info-overlay{position:fixed;inset:0;background:var(--bg);z-index:1200;display:none;flex-direction:column}
+.info-overlay.open{display:flex}
+.info-overlay-head{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.info-overlay-title{font-size:18px;font-weight:700;color:var(--white)}
+.info-overlay-close{background:var(--surface2);border:none;width:32px;height:32px;border-radius:50%;color:var(--white);font-size:15px;cursor:pointer}
+.info-overlay-body{flex:1;overflow-y:auto;padding:20px 20px 40px;font-size:14px;line-height:1.65;color:var(--muted)}
+.info-overlay-body h3{color:var(--white);font-size:15px;margin:20px 0 8px}
+.info-overlay-body h3:first-child{margin-top:0}
+.trash-item{padding:14px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
+.trash-item-title{color:var(--white);font-weight:600;font-size:15px}
+.trash-item-sub{font-size:12px;color:var(--muted)}
+.trash-restore-btn{align-self:flex-start;background:var(--blue-dim);border:1px solid var(--blue-border);color:var(--white);padding:6px 14px;border-radius:100px;font-size:13px;cursor:pointer;margin-top:2px}
+.trash-empty,.trash-loading{text-align:center;padding:60px 0;color:var(--muted)}
 .acc-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--white);outline:none;font-family:inherit;margin-bottom:10px}
 .acc-input:focus{border-color:var(--blue)}
 .acc-remember{display:flex;align-items:center;gap:10px;padding:4px 0 14px;cursor:pointer;font-size:14px;color:var(--muted)}
@@ -521,13 +559,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   <div class="account-body">
     <div class="acc-sec">
       <div class="acc-lbl">Profilis</div>
-      <div class="acc-row"><span class="acc-row-l">Slapyvardis</span><span class="acc-row-v" id="s-nick">–</span></div>
+      <div class="acc-avatar-wrap"><div class="acc-avatar" id="acc-avatar">?</div></div>
+      <div class="acc-row acc-row-tap" onclick="editNickname()"><span class="acc-row-l">Slapyvardis</span><span class="acc-row-v" id="s-nick">–</span></div>
       <div class="acc-row"><span class="acc-row-l">El. paštas</span><span class="acc-row-v" id="s-email">–</span></div>
+    </div>
+    <div class="acc-sec">
+      <div class="acc-lbl">Išvaizda</div>
+      <div class="acc-row">
+        <span class="acc-row-l">Šviesus fonas</span>
+        <label class="switch">
+          <input type="checkbox" id="theme-toggle" onchange="toggleTheme()"/>
+          <span class="switch-slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="acc-sec">
+      <div class="acc-row acc-row-tap" onclick="openPrivacyPolicy()">
+        <span class="acc-row-l acc-row-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Privatumo politika
+        </span>
+        <span class="acc-row-v">›</span>
+      </div>
+      <div class="acc-row acc-row-tap" onclick="openTrash()">
+        <span class="acc-row-l acc-row-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m5 0V4a2 2 0 012-2h0a2 2 0 012 2v2"/></svg>
+          Šiukšlinė
+        </span>
+        <span class="acc-row-v">›</span>
+      </div>
     </div>
     <div class="acc-sec">
       <button class="btn-del" onclick="doSignOut()">Atsijungti</button>
     </div>
+    <div class="acc-sec">
+      <button class="btn-del btn-danger" onclick="deleteAccount()">Ištrinti paskyrą</button>
+    </div>
   </div>
+</div>
+
+<!-- INFO OVERLAY (privatumo politika / šiukšlinė) -->
+<div class="info-overlay" id="info-overlay">
+  <div class="info-overlay-head">
+    <div class="info-overlay-title" id="info-overlay-title"></div>
+    <button class="info-overlay-close" onclick="closeInfoOverlay()">✕</button>
+  </div>
+  <div class="info-overlay-body" id="info-overlay-body"></div>
 </div>
 
 <!-- ── BOTTOM NAV ── -->
@@ -612,7 +689,7 @@ auth.getRedirectResult().then(result=>{
   console.log('getRedirectResult SUCCESS:',result);
 }).catch(e=>{
   console.error('getRedirectResult ERROR:',e);
-  setErr(e.message.replace('Firebase: ','').replace(/\(auth[^)]*\)/,'').trim());
+  setErr(translateAuthError(e));
 });
 async function signInWithGoogle(){
   const provider=new firebase.auth.GoogleAuthProvider();
@@ -638,7 +715,7 @@ async function doForgotPassword(){
     setErr('');
     toast('Slaptažodžio atkūrimo laiškas išsiųstas ✓');
   }catch(e){
-    setErr(e.message.replace('Firebase: ','').replace(/\(auth[^)]*\)/,'').trim());
+    setErr(translateAuthError(e));
   }
 }
 
@@ -651,6 +728,20 @@ function switchAuth(m){
   document.getElementById('btn-auth-do').textContent=m==='login'?'Prisijungti':'Sukurti paskyrą';
   document.querySelector('.btn-forgot').style.display=m==='login'?'block':'none';
   document.getElementById('a-err').textContent='';
+}
+function translateAuthError(e){
+  const map={
+    'auth/wrong-password':'Neteisingas slapyvardis arba slaptažodis.',
+    'auth/user-not-found':'Neteisingas slapyvardis arba slaptažodis.',
+    'auth/invalid-credential':'Neteisingas slapyvardis arba slaptažodis.',
+    'auth/invalid-login-credentials':'Neteisingas slapyvardis arba slaptažodis.',
+    'auth/too-many-requests':'Per daug bandymų. Palaukite kelias minutes ir bandykite dar kartą.',
+    'auth/email-already-in-use':'Šis el. paštas jau naudojamas kitos paskyros.',
+    'auth/weak-password':'Slaptažodis per silpnas — turi būti bent 6 simboliai.',
+    'auth/invalid-email':'Neteisingas el. pašto formatas.',
+    'auth/network-request-failed':'Nepavyko prisijungti prie interneto. Patikrinkite ryšį.',
+  };
+  return map[e.code]||e.message.replace('Firebase: ','').replace(/\(auth[^)]*\)/,'').trim();
 }
 async function doAuth(){
   const n=document.getElementById('a-nick').value.trim();
@@ -666,11 +757,11 @@ async function doAuth(){
       await db.collection('users').doc(cr.user.uid).set({nickname:n,email:e,createdAt:new Date().toISOString()});
     }else{
       const q=await db.collection('users').where('nickname','==',n).limit(1).get();
-      if(q.empty){setErr('Slapyvardis nerastas.');btn.disabled=false;btn.textContent='Prisijungti';return;}
+      if(q.empty){setErr('Neteisingas slapyvardis arba slaptažodis.');btn.disabled=false;btn.textContent='Prisijungti';return;}
       await auth.signInWithEmailAndPassword(q.docs[0].data().email,p);
     }
   }catch(e){
-    setErr(e.message.replace('Firebase: ','').replace(/\(auth[^)]*\)/,'').trim());
+    setErr(translateAuthError(e));
     btn.disabled=false;btn.textContent=amode==='login'?'Prisijungti':'Sukurti paskyrą';
   }
 }
@@ -681,8 +772,112 @@ function afterLogin(){
   hideSplash();
   document.getElementById('bottom-nav').style.display='flex';
   loadHomeList();
+  applyThemePref();
   show('p-home');
   setNavActive('home');
+}
+function applyTheme(isLight){
+  document.documentElement.classList.toggle('light',isLight);
+  const t=document.getElementById('theme-toggle');
+  if(t)t.checked=isLight;
+}
+async function applyThemePref(){
+  try{
+    const s=await db.collection('users').doc(user.uid).get();
+    applyTheme((s.data()||{}).theme==='light');
+  }catch(e){applyTheme(false);}
+}
+async function toggleTheme(){
+  const isLight=document.getElementById('theme-toggle').checked;
+  applyTheme(isLight);
+  try{
+    await db.collection('users').doc(user.uid).update({theme:isLight?'light':'dark'});
+  }catch(e){console.warn('Saving theme preference failed:',e);}
+}
+async function editNickname(){
+  openModal('Redaguoti slapyvardį',nick,async(val)=>{
+    const newNick=(val||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'');
+    if(!newNick||newNick===nick)return;
+    const clash=await db.collection('users').where('nickname','==',newNick).limit(1).get();
+    if(!clash.empty&&clash.docs[0].id!==user.uid){toast('Šis slapyvardis jau užimtas.');return;}
+    await db.collection('users').doc(user.uid).update({nickname:newNick});
+    nick=newNick;
+    document.getElementById('s-nick').textContent=nick;
+    document.getElementById('acc-avatar').textContent=nick.charAt(0).toUpperCase();
+    toast('Išsaugota ✓');
+  });
+}
+// ── INFO OVERLAY (privatumo politika / šiukšlinė) ──
+function openInfoOverlay(title,html){
+  document.getElementById('info-overlay-title').textContent=title;
+  document.getElementById('info-overlay-body').innerHTML=html;
+  document.getElementById('info-overlay').classList.add('open');
+}
+function closeInfoOverlay(){
+  document.getElementById('info-overlay').classList.remove('open');
+}
+function openPrivacyPolicy(){
+  openInfoOverlay('Privatumo politika',`
+    <h3>Duomenų valdytoja</h3>
+    <p>Julija Virbickaitė. Kontaktas: troyfyshop@gmail.com</p>
+    <h3>Kokius duomenis renkame</h3>
+    <p>El. paštas, slapyvardis, garso įrašai (saugomi jūsų įrenginyje ir Firebase Storage debesyje), transkriptai, santraukos, komentarai ir užduotys (saugomi Firebase Firestore debesyje).</p>
+    <h3>Kam naudojame</h3>
+    <p>Tik appso funkcijoms teikti — įrašymui, konvertavimui į tekstą, santraukoms. Duomenų neparduodame ir neperduodame trečiosioms šalims, išskyrus paslaugas, būtinas appso veikimui (Firebase, n8n, OpenAI).</p>
+    <h3>Šiukšlinė</h3>
+    <p>Ištrinti įrašai 7 dienas laikomi šiukšlinėje ir gali būti atkurti. Po 7 dienų jie ištrinami visam laikui.</p>
+    <h3>Jūsų teisės</h3>
+    <p>Turite teisę susipažinti, ištaisyti, ištrinti savo duomenis, ar pateikti skundą Valstybinei duomenų apsaugos inspekcijai (vdai.lrv.lt). Dėl klausimų rašykite troyfyshop@gmail.com</p>
+  `);
+}
+async function openTrash(){
+  openInfoOverlay('Šiukšlinė','<div class="trash-loading">Kraunama…</div>');
+  const snap=await db.collection('users').doc(user.uid).collection('recordings').get();
+  const now=Date.now();
+  const keep=[];
+  for(const d of snap.docs){
+    const r=d.data();
+    if(!r.deletedAt)continue;
+    const daysPassed=(now-new Date(r.deletedAt).getTime())/86400000;
+    if(daysPassed>=7){
+      purgeRecording(d.id,r.audioPath);
+    }else{
+      keep.push({id:d.id,title:r.title,deletedAt:r.deletedAt,daysLeft:Math.max(1,Math.ceil(7-daysPassed))});
+    }
+  }
+  const body=document.getElementById('info-overlay-body');
+  if(!body||!document.getElementById('info-overlay').classList.contains('open'))return;
+  if(!keep.length){body.innerHTML='<div class="trash-empty">Šiukšlinė tuščia.</div>';return;}
+  keep.sort((a,b)=>new Date(b.deletedAt)-new Date(a.deletedAt));
+  body.innerHTML=keep.map(r=>`
+    <div class="trash-item">
+      <div class="trash-item-title">${esc(r.title||'Be pavadinimo')}</div>
+      <div class="trash-item-sub">Bus visam laikui ištrinta po ${r.daysLeft} d.</div>
+      <button class="trash-restore-btn" onclick="restoreRecording('${r.id}')">Atkurti</button>
+    </div>
+  `).join('');
+}
+async function deleteAccount(){
+  if(!confirm('Ištrinti paskyrą VISAM LAIKUI? Bus ištrinti visi įrašai, tekstai ir garso failai. Šio veiksmo atšaukti negalima.'))return;
+  if(!confirm('Ar tikrai? Tai paskutinis patvirtinimas — paskyros atkurti nebus galima.'))return;
+  try{
+    const snap=await db.collection('users').doc(user.uid).collection('recordings').get();
+    for(const d of snap.docs){
+      const r=d.data();
+      idbDeleteBlob(d.id).catch(()=>{});
+      if(r.audioPath)storage.ref(r.audioPath).delete().catch(()=>{});
+      await d.ref.delete();
+    }
+    await db.collection('users').doc(user.uid).delete();
+    await user.delete();
+    toast('Paskyra ištrinta.');
+  }catch(e){
+    if(e.code==='auth/requires-recent-login'){
+      toast('Dėl saugumo, atsijunkite ir prisijunkite iš naujo, tada bandykite dar kartą.');
+    }else{
+      toast('Nepavyko ištrinti paskyros: '+e.message);
+    }
+  }
 }
 
 // ── PAGES ──
@@ -705,6 +900,7 @@ function navTo(tab){
   else if(tab==='account'){
     document.getElementById('s-nick').textContent=nick;
     document.getElementById('s-email').textContent=user?.email||'–';
+    document.getElementById('acc-avatar').textContent=(nick||'?').charAt(0).toUpperCase();
     show('p-account');
   }
   setNavActive(tab);
@@ -718,7 +914,7 @@ function setNavActive(tab){
 async function loadHomeList(){
   if(!user)return;
   const snap=await db.collection('users').doc(user.uid).collection('recordings').orderBy('createdAt','desc').get();
-  allRecs=snap.docs.map(d=>({id:d.id,...d.data()}));
+  allRecs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>!r.deletedAt);
   renderList(allRecs,'home-list');
 }
 function renderList(recs,containerId){
@@ -1414,17 +1610,26 @@ async function copyTranscript(){
   await copyText(t);
 }
 async function deleteRec(){
-  if(!confirm('Ištrinti šį įrašą negrįžtamai?'))return;
+  if(!confirm('Perkelti šį įrašą į šiukšlinę? Galėsi jį atkurti 7 dienas.'))return;
   const idToDelete=recId;
-  let audioPath=null;
-  try{const s=await db.collection('users').doc(user.uid).collection('recordings').doc(idToDelete).get();if(s.exists)audioPath=s.data().audioPath;}catch(e){}
   unloadAudio();
-  await db.collection('users').doc(user.uid).collection('recordings').doc(idToDelete).delete();
-  idbDeleteBlob(idToDelete).catch(e=>console.warn('IndexedDB blob delete failed:',e));
-  if(audioPath){
-    storage.ref(audioPath).delete().catch(e=>console.warn('Storage blob delete failed:',e));
-  }
-  toast('Ištrinta.');goHome();
+  await db.collection('users').doc(user.uid).collection('recordings').doc(idToDelete).update({deletedAt:new Date().toISOString()});
+  toast('Perkelta į šiukšlinę.');goHome();
+}
+async function purgeRecording(id,audioPath){
+  try{
+    await db.collection('users').doc(user.uid).collection('recordings').doc(id).delete();
+    idbDeleteBlob(id).catch(()=>{});
+    if(audioPath)storage.ref(audioPath).delete().catch(()=>{});
+  }catch(e){console.warn('Permanent purge failed:',e);}
+}
+async function restoreRecording(id){
+  try{
+    await db.collection('users').doc(user.uid).collection('recordings').doc(id).update({deletedAt:firebase.firestore.FieldValue.delete()});
+    toast('Atkurta ✓');
+    openTrash();
+    loadHomeList();
+  }catch(e){toast('Nepavyko atkurti: '+e.message);}
 }
 
 // ── PLAYER ──
