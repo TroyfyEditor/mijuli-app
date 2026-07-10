@@ -293,6 +293,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .fs-modal-title{font-size:17px;font-weight:600;color:var(--white);margin-bottom:12px}
 .fs-modal-textarea{flex:1;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:16px;font-size:15px;color:var(--white);outline:none;font-family:inherit;resize:none;line-height:1.7;-webkit-appearance:none}
 .fs-modal-textarea:focus{border-color:var(--blue)}
+.fs-modal-counter{text-align:right;font-size:12px;color:var(--muted);margin-top:8px;flex-shrink:0}
+.fs-modal-counter.over{color:var(--red)}
 .fs-modal-foot{display:flex;gap:10px;padding:16px;flex-shrink:0}
 .fs-modal-cancel{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:14px;color:var(--white);font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;padding:14px}
 .fs-modal-cancel:active{opacity:.5}
@@ -376,6 +378,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
     <div class="ticon-gap"></div>
   </div>
   <input type="file" id="upload-file-in" accept="audio/*" style="display:none" onchange="handleUpload(event)"/>
+  <div id="rec-title-wrap" style="padding:8px 24px 4px;flex-shrink:0">
+    <input id="rec-title-input" type="text" maxlength="80"
+      style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--white);outline:none;font-family:inherit"
+      placeholder="Įrašo pavadinimas…"
+      onfocus="this.style.borderColor='var(--blue)'"
+      onblur="this.style.borderColor='var(--border)'"/>
+  </div>
   <div class="rec-page">
     <div class="waveform" id="waveform">
       <div class="wbar" id="b1"></div><div class="wbar" id="b2"></div><div class="wbar" id="b3"></div>
@@ -414,13 +423,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
         <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
       </button>
     </div>
-  </div>
-  <div id="rec-title-wrap" style="display:none;padding:0 24px 8px;flex-shrink:0">
-    <input id="rec-title-input" type="text" maxlength="80"
-      style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--white);outline:none;font-family:inherit"
-      placeholder="Įrašo pavadinimas…"
-      onfocus="this.style.borderColor='var(--blue)'"
-      onblur="this.style.borderColor='var(--border)'"/>
   </div>
   <div class="rec-foot" id="rec-foot" style="display:none">
     <button class="btn-cancel" onclick="cancelRecord()">Atšaukti</button>
@@ -636,6 +638,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   <div class="fs-modal-body">
     <div class="fs-modal-title" id="fs-modal-title"></div>
     <textarea class="fs-modal-textarea" id="fs-modal-textarea" placeholder=""></textarea>
+    <div class="fs-modal-counter" id="fs-modal-counter" style="display:none"></div>
   </div>
   <div class="fs-modal-foot">
     <button class="fs-modal-cancel" onclick="closeModal()">Atšaukti</button>
@@ -805,12 +808,11 @@ async function toggleTheme(){
 async function editVocabulary(){
   openModal('Dažni žodžiai (atskirti kableliais)',vocabulary,async(val)=>{
     let v=(val||'').trim();
-    if(v.length>300){v=v.slice(0,300);toast('Sutrumpinta iki 300 simbolių — Whisper geriausiai veikia su trumpu sąrašu.');}
     vocabulary=v;
     await db.collection('users').doc(user.uid).update({vocabulary:v});
     document.getElementById('s-vocab').textContent=v?(v.length>28?v.slice(0,28)+'…':v):'Nenustatyta';
     toast('Išsaugota ✓');
-  });
+  },300);
 }
 async function editNickname(){
   openModal('Redaguoti slapyvardį',nick,async(val)=>{
@@ -1017,6 +1019,7 @@ function renderSearchList(recs,q,containerId){
 // ── RECORD ──
 function goRecord(){
   rstate='idle';rms=0;chunks=[];_uploadBlob=null;
+  document.getElementById('rec-title-input').value='';
   document.getElementById('rec-ring').className='rec-ring';
   document.getElementById('rec-ring').style.opacity='1';
   document.getElementById('rtimer').textContent='00:00';
@@ -1083,8 +1086,8 @@ function stopRec(){
   document.getElementById('rctrls').style.display='none';
   document.getElementById('rec-foot').style.display='flex';
   document.getElementById('rhint').textContent='Atlikta — išsaugokite arba atšaukite';
-  document.getElementById('rec-title-wrap').style.display='block';
-  document.getElementById('rec-title-input').value='Audio, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const ti=document.getElementById('rec-title-input');
+  if(!ti.value.trim())ti.value='Audio, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 }
 let _uploadBlob=null;
 function triggerUpload(){
@@ -1104,8 +1107,8 @@ function handleUpload(e){
   document.getElementById('upload-foot').style.display='flex';
   document.getElementById('rec-foot').style.display='none';
   document.getElementById('rctrls').style.display='none';
-  document.getElementById('rec-title-wrap').style.display='block';
-  document.getElementById('rec-title-input').value=file.name.replace(/\.[^.]+$/,'').slice(0,60)||'Audio, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const ti=document.getElementById('rec-title-input');
+  if(!ti.value.trim())ti.value=file.name.replace(/\.[^.]+$/,'').slice(0,60)||'Audio, '+new Date().toLocaleString('lt-LT',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
   e.target.value='';
 }
 function cancelUpload(){
@@ -1116,7 +1119,6 @@ function cancelUpload(){
   document.getElementById('rhint').style.display='none';
   document.getElementById('rec-choose').style.display='flex';
   document.getElementById('upload-foot').style.display='none';
-  document.getElementById('rec-title-wrap').style.display='none';
   document.getElementById('rec-title-input').value='';
 }
 async function confirmUpload(){
@@ -1135,7 +1137,6 @@ function cancelRecord(){
   if(mr&&mr.state!=='inactive')mr.stop();
   ms&&ms.getTracks().forEach(t=>t.stop());
   mr=null;ms=null;rstate='idle';chunks=[];
-  document.getElementById('rec-title-wrap').style.display='none';
   document.getElementById('rec-title-input').value='';
   goHome();
 }
@@ -1477,13 +1478,29 @@ async function setLang(l){
 async function getRec(){const s=await db.collection('users').doc(user.uid).collection('recordings').doc(recId).get();return s.exists?s.data():null;}
 
 let _modalSaveFn=null;
-function openModal(title,text,onSave){
+function openModal(title,text,onSave,maxLen){
   document.getElementById('fs-modal-title').textContent=title||'';
-  document.getElementById('fs-modal-textarea').value=text||'';
+  const ta=document.getElementById('fs-modal-textarea');
+  ta.value=text||'';
+  const counter=document.getElementById('fs-modal-counter');
+  if(maxLen){
+    ta.maxLength=maxLen;
+    const updateCounter=()=>{
+      const left=maxLen-ta.value.length;
+      counter.textContent=left+' liko';
+      counter.classList.toggle('over',left<0);
+    };
+    ta.oninput=updateCounter;
+    updateCounter();
+    counter.style.display='block';
+  }else{
+    ta.removeAttribute('maxlength');
+    ta.oninput=null;
+    counter.style.display='none';
+  }
   _modalSaveFn=onSave;
   document.getElementById('fs-modal').classList.add('open');
   setTimeout(()=>{
-    const ta=document.getElementById('fs-modal-textarea');
     ta.focus();
     ta.setSelectionRange(ta.value.length,ta.value.length);
   },150);
@@ -1780,7 +1797,7 @@ async function transcribeBlob(blob){
         // Whisper kartais grąžina ne-kalbos garsų žymes skliausteliuose (pvz. "[Birds chirping]",
         // "[Music]") anglų kalba, nepriklausomai nuo nustatytos kalbos — tai modelio artefaktas,
         // ne vertimo klaida. Išvalome jas prieš išsaugant tekstą.
-        const cleaned=d.text.replace(/\[[^\]]*\]/g,'').replace(/\s{2,}/g,' ').trim();
+        const cleaned=d.text.replace(/\[[^\]]*\]/g,'').replace(/^=+\s*/,'').replace(/\s{2,}/g,' ').trim();
         if(!cleaned)throw new Error('Tuščias tekstas');
         ok(cleaned);
       }catch(err){fail(err);}
