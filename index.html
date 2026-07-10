@@ -574,6 +574,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
       </div>
     </div>
     <div class="acc-sec">
+      <div class="acc-lbl">Transkripcija</div>
+      <div class="acc-row acc-row-tap" onclick="editVocabulary()">
+        <span class="acc-row-l">Dažni žodžiai</span>
+        <span class="acc-row-v" id="s-vocab">–</span>
+      </div>
+    </div>
+    <div class="acc-sec">
       <div class="acc-row acc-row-tap" onclick="openPrivacyPolicy()">
         <span class="acc-row-l acc-row-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
@@ -649,7 +656,7 @@ firebase.initializeApp({
 });
 const auth=firebase.auth(),db=firebase.firestore(),storage=firebase.storage();
 
-let user=null,nick='',recId=null,lang='lt';
+let user=null,nick='',recId=null,lang='lt',vocabulary='';
 let mr=null,ms=null,chunks=[],tick=null,rms=0,rstate='idle';
 let analyser=null,af=null;
 let ael=null,aurl=null,playing=false;
@@ -676,6 +683,7 @@ auth.onAuthStateChanged(async u=>{
       s=await db.collection('users').doc(u.uid).get();
     }
     nick=s.data().nickname;
+    vocabulary=s.data().vocabulary||'';
     afterLogin();
   }else{
     user=null;
@@ -794,6 +802,16 @@ async function toggleTheme(){
     await db.collection('users').doc(user.uid).update({theme:isLight?'light':'dark'});
   }catch(e){console.warn('Saving theme preference failed:',e);}
 }
+async function editVocabulary(){
+  openModal('Dažni žodžiai (atskirti kableliais)',vocabulary,async(val)=>{
+    let v=(val||'').trim();
+    if(v.length>300){v=v.slice(0,300);toast('Sutrumpinta iki 300 simbolių — Whisper geriausiai veikia su trumpu sąrašu.');}
+    vocabulary=v;
+    await db.collection('users').doc(user.uid).update({vocabulary:v});
+    document.getElementById('s-vocab').textContent=v?(v.length>28?v.slice(0,28)+'…':v):'Nenustatyta';
+    toast('Išsaugota ✓');
+  });
+}
 async function editNickname(){
   openModal('Redaguoti slapyvardį',nick,async(val)=>{
     const newNick=(val||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'');
@@ -900,6 +918,7 @@ function navTo(tab){
     document.getElementById('s-nick').textContent=nick;
     document.getElementById('s-email').textContent=user?.email||'–';
     document.getElementById('acc-avatar').textContent=(nick||'?').charAt(0).toUpperCase();
+    document.getElementById('s-vocab').textContent=vocabulary?(vocabulary.length>28?vocabulary.slice(0,28)+'…':vocabulary):'Nenustatyta';
     show('p-account');
   }
   setNavActive(tab);
@@ -1753,12 +1772,17 @@ async function transcribeBlob(blob){
         const r=await fetch('https://julija.app.n8n.cloud/webhook/fd3bd58d-bec2-4faa-a6b2-4a4c82804567',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({audio:b64,mimeType:mtype})
+          body:JSON.stringify({audio:b64,mimeType:mtype,vocabulary})
         });
         const d=await r.json();
         if(!r.ok)throw new Error(d.error||'Klaida konvertuojant į tekstą');
         if(!d.text)throw new Error('Tuščias tekstas');
-        ok(d.text);
+        // Whisper kartais grąžina ne-kalbos garsų žymes skliausteliuose (pvz. "[Birds chirping]",
+        // "[Music]") anglų kalba, nepriklausomai nuo nustatytos kalbos — tai modelio artefaktas,
+        // ne vertimo klaida. Išvalome jas prieš išsaugant tekstą.
+        const cleaned=d.text.replace(/\[[^\]]*\]/g,'').replace(/\s{2,}/g,' ').trim();
+        if(!cleaned)throw new Error('Tuščias tekstas');
+        ok(cleaned);
       }catch(err){fail(err);}
     };
     fr.onerror=()=>fail(new Error('Nepavyko nuskaityti garso įrašo'));
