@@ -936,7 +936,14 @@ function setNavActive(tab){
 async function loadHomeList(){
   if(!user)return;
   const snap=await db.collection('users').doc(user.uid).collection('recordings').orderBy('createdAt','desc').get();
-  allRecs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>!r.deletedAt);
+  const fetched=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>!r.deletedAt);
+  // Firestore's get() can occasionally lag slightly behind a just-completed write (e.g. on
+  // a flaky connection), which made brand-new recordings briefly "disappear" from the home
+  // list until the app was fully restarted. As a safety net, keep any recording created in
+  // the last 60s that's in our in-memory list but missing from this fresh fetch.
+  const fetchedIds=new Set(fetched.map(r=>r.id));
+  const recentlyMissing=allRecs.filter(r=>!fetchedIds.has(r.id)&&!r.deletedAt&&(Date.now()-new Date(r.createdAt).getTime())<60000);
+  allRecs=[...recentlyMissing,...fetched].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
   renderList(allRecs,'home-list');
 }
 function renderList(recs,containerId){
@@ -1047,6 +1054,11 @@ async function toggleRec(){
     ms=await navigator.mediaDevices.getUserMedia({audio:true});
     chunks=[];
     const ctx=new AudioContext();
+    // iOS Safari kartais palieka AudioContext "suspended" būsenoje, jei jis sukuriamas
+    // po asinchroninio laukimo (await) — net jei toggleRec() buvo iškviesta tiesiogiai
+    // paspaudus mygtuką. Be šio resume(), analyser negaus realių audio duomenų ir
+    // bangelės atrodys "sustingusios", nors pats įrašymas (MediaRecorder) veikia normaliai.
+    if(ctx.state==='suspended'){try{await ctx.resume();}catch(e){}}
     analyser=ctx.createAnalyser();analyser.fftSize=64;
     ctx.createMediaStreamSource(ms).connect(analyser);
     startWave();
@@ -1197,6 +1209,11 @@ async function autoTranscribe(blob,dur,customTitle){
     await idbSaveBlob(id,blob);
     const rec={id,title,durationMs:dur,createdAt:now,updatedAt:now,transcript:null,transcriptEn:null,transcriptionStatus:'pending',summaryData:null,actionItems:[],comments:[],highlights:[],highlightsEn:[]};
     await db.collection('users').doc(user.uid).collection('recordings').doc(id).set(rec);
+    // Add to the in-memory list immediately so it shows up in the home list right away,
+    // without waiting for a fresh Firestore query (which can occasionally lag behind a
+    // just-completed write, e.g. on flaky connections, leaving the new recording invisible
+    // until the app is fully restarted).
+    allRecs.unshift(rec);
     // Upload the audio to Firebase Storage in the background (don't block the UI on this).
     // If it fails (offline, quota, etc.) the recording still works fine locally — we just
     // won't have a cloud backup / cross-device copy for this one until it's retried.
@@ -1240,7 +1257,11 @@ async function autoTranscribe(blob,dur,customTitle){
       toast('Nepavyko sugeneruoti santraukos: '+e.message);
     }
   }catch(err){
-    toast('Įrašas išsaugotas, bet konvertavimas nepavyko. Bandykite dar kartą.');
+    if(err.message==='Tuščias tekstas'){
+      toast('Įraše nėra teksto — panašu, kad nebuvo kalbėta arba girdėti tik foninis garsas.');
+    }else{
+      toast('Įrašas išsaugotas, bet konvertavimas nepavyko. Bandykite dar kartą.');
+    }
   }
   await openDetail(id);
 }
@@ -1307,9 +1328,9 @@ async function openDetail(id){
     if(!s.exists){toast('Nerasta.');goHome();return;}
     const rec=s.data();
     renderDetail(rec);
-    // Update cache
+    // Update cache — add if missing (e.g. a just-created recording), otherwise update in place
     const idx=allRecs.findIndex(r=>r.id===id);
-    if(idx>=0)allRecs[idx]=rec;
+    if(idx>=0)allRecs[idx]=rec;else allRecs.unshift(rec);
   });
 }
 function renderDetail(rec){
@@ -1825,7 +1846,13 @@ async function doTranscribe(){
     await db.collection('users').doc(user.uid).collection('recordings').doc(recId).update(upd);
     trackUsage((rec.durationMs||0)/60000,0);
     renderDetail({...rec,...upd});toast('Tekstas paruoštas ✓');
-  }catch(e){toast('Klaida: '+e.message);}
+  }catch(e){
+    if(e.message==='Tuščias tekstas'){
+      toast('Įraše nėra teksto — panašu, kad nebuvo kalbėta arba girdėti tik foninis garsas.');
+    }else{
+      toast('Klaida: '+e.message);
+    }
+  }
   finally{btn.disabled=false;btn.textContent='Konvertuoti iš naujo';}
 }
 async function generateSummaryData(transcript,l){
