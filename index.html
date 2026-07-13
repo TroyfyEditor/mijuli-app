@@ -566,6 +566,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
       <div class="acc-avatar-wrap"><div class="acc-avatar" id="acc-avatar">?</div></div>
       <div class="acc-row acc-row-tap" onclick="editNickname()"><span class="acc-row-l">Slapyvardis</span><span class="acc-row-v" id="s-nick">–</span></div>
       <div class="acc-row"><span class="acc-row-l">El. paštas</span><span class="acc-row-v" id="s-email">–</span></div>
+      <div class="acc-row" id="email-verify-banner" style="display:none">
+        <span class="acc-row-l" style="color:var(--muted)">✉️ El. paštas nepatvirtintas</span>
+        <span class="acc-row-v acc-row-tap" onclick="resendVerificationEmail()" style="color:var(--blue);cursor:pointer">Siųsti dar kartą</span>
+      </div>
     </div>
     <div class="acc-sec">
       <div class="acc-lbl">Išvaizda</div>
@@ -666,6 +670,10 @@ let mr=null,ms=null,chunks=[],tick=null,rms=0,rstate='idle';
 let analyser=null,af=null;
 let ael=null,aurl=null,playing=false;
 let allRecs=[];
+// Trumpalaikė "ką tik ištrintų" ID/laiko žymė. Naudojama loadHomeList(), kad neseniai
+// ištrintas įrašas neliktų sąraše, jei Firestore užklausa (dėl offline-cache keistenybių)
+// vis dar grąžina jį — panašiai kaip "recentlyMissing" apsauga naujiems įrašams žemiau.
+const recentlyDeletedIds=new Map();
 
 // ── AUTH ──
 auth.onAuthStateChanged(async u=>{
@@ -768,6 +776,9 @@ async function doAuth(){
       if(!e){setErr('Įveskite el. paštą.');btn.disabled=false;btn.textContent='Sukurti paskyrą';return;}
       const cr=await auth.createUserWithEmailAndPassword(e,p);
       await db.collection('users').doc(cr.user.uid).set({nickname:n,email:e,createdAt:new Date().toISOString()});
+      // Best-effort: don't block account creation if sending the verification email fails
+      // (e.g. transient network issue) — the person can always resend it later from Account.
+      try{await cr.user.sendEmailVerification();}catch(err){console.warn('Verification email failed:',err);}
     }else{
       const q=await db.collection('users').where('nickname','==',n).limit(1).get();
       if(q.empty){setErr('Neteisingas slapyvardis arba slaptažodis.');btn.disabled=false;btn.textContent='Prisijungti';return;}
@@ -779,6 +790,15 @@ async function doAuth(){
   }
 }
 function setErr(m){document.getElementById('a-err').textContent=m;}
+async function resendVerificationEmail(){
+  if(!user)return;
+  try{
+    await user.sendEmailVerification();
+    toast('Patvirtinimo laiškas išsiųstas ✓');
+  }catch(e){
+    toast(translateAuthError(e));
+  }
+}
 async function doSignOut(){await auth.signOut();}
 
 function afterLogin(){
@@ -923,6 +943,16 @@ function navTo(tab){
     document.getElementById('s-email').textContent=user?.email||'–';
     document.getElementById('acc-avatar').textContent=(nick||'?').charAt(0).toUpperCase();
     document.getElementById('s-vocab').textContent=vocabulary?(vocabulary.length>28?vocabulary.slice(0,28)+'…':vocabulary):'Nenustatyta';
+    // Firebase caches emailVerified locally, so reload() to get the latest status from the
+    // server — this is how we notice if the person clicked the verification link since we
+    // last checked. Google sign-in accounts are always verified already, so this banner
+    // naturally never shows for them.
+    (async()=>{
+      if(!user)return;
+      try{await user.reload();}catch(e){}
+      const banner=document.getElementById('email-verify-banner');
+      if(banner)banner.style.display=user.emailVerified?'none':'flex';
+    })();
     show('p-account');
   }
   setNavActive(tab);
@@ -936,13 +966,17 @@ function setNavActive(tab){
 async function loadHomeList(){
   if(!user)return;
   const snap=await db.collection('users').doc(user.uid).collection('recordings').orderBy('createdAt','desc').get();
-  const fetched=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>!r.deletedAt);
+  // Pamirštame senesnius nei 60s "neseniai ištrintus" žymėjimus — po tiek laiko Firestore
+  // užklausa jau tikrai turėtų būti atsinaujinusi.
+  const now=Date.now();
+  for(const [id,ts] of recentlyDeletedIds){if(now-ts>60000)recentlyDeletedIds.delete(id);}
+  const fetched=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>!r.deletedAt&&!recentlyDeletedIds.has(r.id));
   // Firestore's get() can occasionally lag slightly behind a just-completed write (e.g. on
   // a flaky connection), which made brand-new recordings briefly "disappear" from the home
   // list until the app was fully restarted. As a safety net, keep any recording created in
   // the last 60s that's in our in-memory list but missing from this fresh fetch.
   const fetchedIds=new Set(fetched.map(r=>r.id));
-  const recentlyMissing=allRecs.filter(r=>!fetchedIds.has(r.id)&&!r.deletedAt&&(Date.now()-new Date(r.createdAt).getTime())<60000);
+  const recentlyMissing=allRecs.filter(r=>!fetchedIds.has(r.id)&&!r.deletedAt&&!recentlyDeletedIds.has(r.id)&&(Date.now()-new Date(r.createdAt).getTime())<60000);
   allRecs=[...recentlyMissing,...fetched].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
   renderList(allRecs,'home-list');
 }
@@ -1259,6 +1293,8 @@ async function autoTranscribe(blob,dur,customTitle){
   }catch(err){
     if(err.message==='Tuščias tekstas'){
       toast('Įraše nėra teksto — panašu, kad nebuvo kalbėta arba girdėti tik foninis garsas.');
+    }else if(err.message==='Nėra interneto ryšio'){
+      toast('Įrašas išsaugotas, bet nepavyko konvertuoti — nėra interneto ryšio. Bandykite dar kartą, kai atsiras ryšys.');
     }else{
       toast('Įrašas išsaugotas, bet konvertavimas nepavyko. Bandykite dar kartą.');
     }
@@ -1675,6 +1711,11 @@ async function deleteRec(){
   const idToDelete=recId;
   unloadAudio();
   await db.collection('users').doc(user.uid).collection('recordings').doc(idToDelete).update({deletedAt:new Date().toISOString()});
+  // Pašaliname iš atmintyje esančio sąrašo iš karto, kad įrašas nebūtų rodomas namų
+  // puslapyje net jei sekantis loadHomeList() užklausimas laikinai grąžintų pasenusius
+  // (dar neatnaujintus) duomenis.
+  allRecs=allRecs.filter(r=>r.id!==idToDelete);
+  recentlyDeletedIds.set(idToDelete,Date.now());
   toast('Perkelta į šiukšliadėžę.');goHome();
 }
 async function purgeRecording(id,audioPath){
@@ -1811,6 +1852,7 @@ async function transcribeBlob(blob){
     const fr=new FileReader();
     fr.onload=async e=>{
       try{
+        if(!navigator.onLine)throw new Error('Nėra interneto ryšio');
         const b64=e.target.result.split(',')[1];
         const mtype=blob.type||'audio/webm';
         const r=await fetch('https://julija.app.n8n.cloud/webhook/fd3bd58d-bec2-4faa-a6b2-4a4c82804567',{
@@ -1827,7 +1869,16 @@ async function transcribeBlob(blob){
         const cleaned=d.text.replace(/\[[^\]]*\]/g,'').replace(/^=+\s*/,'').replace(/\s{2,}/g,' ').trim();
         if(!cleaned)throw new Error('Tuščias tekstas');
         ok(cleaned);
-      }catch(err){fail(err);}
+      }catch(err){
+        // Naršyklė ryšio klaidas dažnai praneša bendru "Failed to fetch" tekstu — paverčiame
+        // jį aiškiu, suprantamu pranešimu, kad vartotojas žinotų, jog tai dėl interneto, o ne
+        // dėl paties įrašo ar serverio.
+        if(err instanceof TypeError||/failed to fetch/i.test(err.message)){
+          fail(new Error('Nėra interneto ryšio'));
+        }else{
+          fail(err);
+        }
+      }
     };
     fr.onerror=()=>fail(new Error('Nepavyko nuskaityti garso įrašo'));
     fr.readAsDataURL(blob);
@@ -1849,6 +1900,8 @@ async function doTranscribe(){
   }catch(e){
     if(e.message==='Tuščias tekstas'){
       toast('Įraše nėra teksto — panašu, kad nebuvo kalbėta arba girdėti tik foninis garsas.');
+    }else if(e.message==='Nėra interneto ryšio'){
+      toast('Nėra interneto ryšio. Bandykite dar kartą, kai atsiras ryšys.');
     }else{
       toast('Klaida: '+e.message);
     }
