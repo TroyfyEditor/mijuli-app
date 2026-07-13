@@ -664,6 +664,10 @@ firebase.initializeApp({
   appId:"1:816788640567:web:4607af34b1e4499426c0b2"
 });
 const auth=firebase.auth(),db=firebase.firestore(),storage=firebase.storage();
+// Papildoma apsauga: appas visada nustato lietuvių kalbą Firebase Auth laiškams
+// (patvirtinimo, slaptažodžio priminimo), nepriklausomai nuo Console nustatymo — kad
+// niekada netyčia negrįžtų prie anglų kalbos, jei Console pusėje kas pasikeistų.
+auth.languageCode='lt';
 
 let user=null,nick='',recId=null,lang='lt',vocabulary='';
 let mr=null,ms=null,chunks=[],tick=null,rms=0,rstate='idle';
